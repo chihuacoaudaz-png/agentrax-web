@@ -3,11 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AGENTRAX PERÚ S.A.C. | Plataforma de Agentes de IA y Compilación Determinista B2B</title>
-  <meta name="description" content="Infraestructura de agentes autónomos de IA, automatización operativa en minería e industria y compilación editorial determinista para el mercado corporativo de LATAM.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%2308090B'/><path d='M8 24L16 6L24 24H18.5L16 17.5L13.5 24H8Z' fill='%23007AFF'/><rect x='14.5' y='12' width='3' height='3' rx='1.5' fill='%230144AD'/></svg>" type="image/svg+xml">
+  <title>Agentrax Perú | Inteligencia Artificial & Automatización Operativa B2B</title>
+  <meta name="description" content="Plataforma SaaS y desarrollo de Inteligencia Artificial para la automatización de procesos operativos, gestión documental inteligente y analítica empresarial en Perú y LATAM.">
+  <meta name="keywords" content="Agentrax, IA empresarial Perú, automatización de procesos, gestión documental inteligente, Vertex AI, Claude API, Google Cloud Startups, SaaS LATAM">
+  <meta name="author" content="Agentrax Perú">
+  
+  <!-- Open Graph / Meta Social -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://agentraxperu.com/">
+  <meta property="og:title" content="Agentrax Perú | IA & Automatización de Procesos B2B">
+  <meta property="og:description" content="Automatización inteligente de flujos documentales, orquestación de agentes autónomos y analítica predictiva sobre infraestructura en la nube.">
+  <meta property="og:image" content="https://agentraxperu.com/logo.jpg">
+  
+  <!-- Favicon SVG -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2308090B'/><path d='M8 24L16 6L24 24H18.5L16 17.5L13.5 24H8Z' fill='%23007AFF'/><rect x='14.5' y='12' width='3' height='3' rx='1.5' fill='%230144AD'/></svg>" type="image/svg+xml">
 
-  <!-- Tailwind CDN + Custom Config matching Linear / Impeccable strict rules -->
+  <!-- Fonts & Tailwind CSS CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -34,8 +48,8 @@
             mono: ['JetBrains Mono', 'monospace'],
           },
           borderRadius: {
-            DEFAULT: '4px',
-            md: '6px',
+            DEFAULT: '6px',
+            md: '8px',
           }
         }
       }
@@ -43,157 +57,181 @@
   </script>
   <link rel="stylesheet" href="globals.css">
 </head>
-<body class="bg-surface-canvas text-neutral-200 font-sans selection:bg-brand-primary selection:text-white antialiased">
+<body class="bg-surface-canvas text-neutral-200 font-sans antialiased selection:bg-brand-primary selection:text-white">
 
-  <!-- HEADER DE COMANDO COMPACTO (Height: 56px) -->
-  <header class="fixed top-0 left-0 right-0 z-50 h-14 bg-surface-canvas/90 backdrop-blur-md border-b border-line-subtle transition-colors">
+  <!-- HEADER DE COMANDO (Height: 56px) -->
+  <header class="fixed top-0 left-0 right-0 z-50 h-14 bg-surface-canvas/90 backdrop-blur-md border-b border-line-subtle transition-all">
     <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
       
-      <!-- Logo + Systems Telemetry Tag -->
-      <div class="flex items-center space-x-3.5">
-        <a href="#" class="flex items-center space-x-2.5">
-          <img src="logo.jpg" alt="Agentrax Perú Logo" class="h-7 w-auto object-contain rounded">
-          <span class="font-semibold text-sm tracking-tight text-white flex items-center gap-1.5">
-            AGENTRAX
-            <span class="text-[10px] font-mono px-1 py-0.2 bg-surface-2 border border-line-subtle text-neutral-400 rounded">S.A.C.</span>
-          </span>
-        </a>
-        <span class="text-neutral-600 hidden sm:inline">|</span>
-        <div class="hidden sm:flex items-center space-x-1.5 text-[11px] font-mono text-neutral-400 bg-surface-1 px-2.5 py-1 rounded border border-line-subtle">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>[SYSTEMS_ONLINE // LIMA_PE]</span>
+      <!-- Brand Logo + Live System Pill -->
+      <a href="#" class="flex items-center space-x-3 group">
+        <img src="logo.jpg" alt="Agentrax Perú" class="h-7 w-auto object-contain rounded">
+        <div class="flex items-center space-x-2">
+          <span class="font-semibold text-sm tracking-tight text-white">AGENTRAX</span>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 bg-surface-2 border border-line-subtle text-neutral-400 rounded">PERÚ</span>
         </div>
-      </div>
+      </a>
 
-      <!-- Navigation Links -->
-      <nav class="hidden md:flex items-center space-x-6 text-xs font-medium text-neutral-400">
-        <a href="#soluciones" class="hover:text-white transition-colors">Soluciones B2B</a>
-        <a href="#arquitectura" class="hover:text-white transition-colors">Arquitectura Cloud & AI</a>
-        <a href="#doc-formatter" class="hover:text-white transition-colors">Doc-Formatter DAG</a>
-        <a href="#compliance" class="hover:text-white transition-colors">Seguridad & ZDR</a>
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex items-center space-x-8 text-xs font-medium text-neutral-400">
+        <a href="#soluciones" class="hover:text-white transition-colors">Soluciones</a>
+        <a href="#arquitectura" class="hover:text-white transition-colors">Arquitectura & Stack</a>
+        <a href="#seguridad" class="hover:text-white transition-colors">Seguridad & Compliance</a>
+        <a href="#contacto" class="hover:text-white transition-colors">Contacto</a>
       </nav>
 
-      <!-- Compact Action CTA -->
+      <!-- Action Button -->
       <div class="flex items-center space-x-3">
+        <a href="mailto:comercial@agentraxperu.com" class="hidden sm:flex text-xs font-mono text-neutral-400 hover:text-white transition-colors items-center gap-1.5 px-2.5 py-1 rounded bg-surface-1 border border-line-subtle">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>comercial@agentraxperu.com</span>
+        </a>
         <a href="#contacto" class="text-xs font-medium px-3.5 py-1.5 rounded bg-brand-primary hover:bg-blue-600 text-white transition-all">
-          Agendar Sesión de Arquitectura
+          Solicitar Demo
         </a>
       </div>
 
     </div>
   </header>
 
-  <main class="pt-20">
+  <main class="pt-14">
 
-    <!-- HERO SECTION ASIMÉTRICO (3-SECOND ENGINEERING FOCUS) -->
-    <section class="py-16 md:py-24 border-b border-line-subtle relative">
+    <!-- HERO SECTION (STRIPE/LINEAR TECH MINIMALIST) -->
+    <section class="py-16 md:py-24 border-b border-line-subtle relative overflow-hidden">
       <div class="max-w-7xl mx-auto px-4">
         
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
-          <!-- Columna Izquierda (Narrativa B2B de Ingeniería) -->
+          <!-- Columna Izquierda: Mensaje y Propuesta de Valor -->
           <div class="lg:col-span-7 space-y-6">
             
-            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-surface-1 border border-line-subtle text-xs font-mono text-neutral-300">
-              <span class="w-1.5 h-1.5 rounded-full bg-brand-primary"></span>
-              <span>AGENTRAX_ENTERPRISE_CORE // LATAM INFRASTRUCTURE</span>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-surface-1 border border-line-subtle text-xs font-mono text-neutral-300">
+              <span class="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse"></span>
+              <span class="text-brand-primary font-semibold">ENTERPRISE AI PLATFORM</span>
+              <span class="text-neutral-600">|</span>
+              <span class="text-neutral-400">LATAM CLOUD OPERATIONS</span>
             </div>
 
             <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white leading-[1.12]">
-              Orquestación de Agentes Autónomos de IA, Transformación Digital Operativa y Compilación Documental Determinista
+              Inteligencia Artificial y Automatización de Procesos para Empresas en LATAM
             </h1>
 
             <p class="text-sm sm:text-base text-neutral-400 leading-relaxed max-w-2xl">
-              Diseñamos infraestructura computacional de misión crítica para minería, energía e industria en Perú y la región. Eliminamos la fricción de partes manuales y silos de datos conectando ingesta de campo, modelos de razonamiento <strong class="text-neutral-200">Anthropic Claude</strong> y pipelines elásticos en <strong class="text-neutral-200">Google Cloud</strong> con garantías matemáticas de Cero Alucinación.
+              En <strong class="text-neutral-200">Agentrax</strong> diseñamos soluciones SaaS y pipelines de IA aplicada que transforman flujos operativos complejos, gestionan documentos con precisión determinista y entregan analítica predictiva en tiempo real sobre <strong class="text-neutral-200">Google Cloud (Vertex AI)</strong> y la API de <strong class="text-neutral-200">Anthropic Claude</strong>.
             </p>
 
             <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <a href="#contacto" class="px-5 py-2.5 rounded bg-brand-primary hover:bg-blue-600 text-white text-xs font-medium text-center transition-all flex items-center justify-center gap-2">
-                <span>Solicitar Evaluación de Factibilidad</span>
-                <span class="font-mono text-[11px]">→</span>
+                <span>Solicitar Demostración</span>
+                <span class="font-mono text-xs">→</span>
               </a>
-              <a href="#arquitectura" class="px-5 py-2.5 rounded bg-surface-1 border border-line-subtle hover:border-line-hover text-neutral-300 hover:text-white text-xs font-medium text-center transition-all flex items-center justify-center gap-2">
-                <span class="font-mono text-brand-primary">#</span>
-                <span>Explorar Arquitectura</span>
+              <a href="mailto:comercial@agentraxperu.com" class="px-5 py-2.5 rounded bg-surface-1 border border-line-subtle hover:border-line-hover text-neutral-300 hover:text-white text-xs font-medium text-center transition-all flex items-center justify-center gap-2">
+                <span class="font-mono text-brand-primary">@</span>
+                <span>Contactar a comercial@agentraxperu.com</span>
               </a>
             </div>
 
-            <!-- Telemetría Rápida de Ingeniería -->
+            <!-- Métricas Clave de Ingeniería -->
             <div class="grid grid-cols-3 gap-3 pt-6 border-t border-line-subtle max-w-lg">
               <div class="p-3 bg-surface-1 border border-line-subtle rounded">
-                <div class="text-xs text-neutral-500 font-mono">LATENCIA PIPELINE</div>
-                <div class="text-base font-semibold font-mono text-white mt-0.5">142ms <span class="text-[10px] text-emerald-400">p99</span></div>
+                <div class="text-[11px] text-neutral-500 font-mono">DISPONIBILIDAD SLA</div>
+                <div class="text-base font-semibold font-mono text-white mt-0.5">99.9% <span class="text-[10px] text-emerald-400">Cloud</span></div>
               </div>
               <div class="p-3 bg-surface-1 border border-line-subtle rounded">
-                <div class="text-xs text-neutral-500 font-mono">DETERMINISMO DOC</div>
-                <div class="text-base font-semibold font-mono text-white mt-0.5">100.0% <span class="text-[10px] text-neutral-400">bit-exact</span></div>
+                <div class="text-[11px] text-neutral-500 font-mono">REDUCCIÓN TIEMPOS</div>
+                <div class="text-base font-semibold font-mono text-white mt-0.5">-65% <span class="text-[10px] text-neutral-400">Back-office</span></div>
               </div>
               <div class="p-3 bg-surface-1 border border-line-subtle rounded">
-                <div class="text-xs text-neutral-500 font-mono">SEGURIDAD INFERENCIA</div>
-                <div class="text-base font-semibold font-mono text-white mt-0.5">ZDR <span class="text-[10px] text-brand-primary">Verified</span></div>
+                <div class="text-[11px] text-neutral-500 font-mono">LATENCIA INFERENCIA</div>
+                <div class="text-base font-semibold font-mono text-white mt-0.5">&lt;180ms <span class="text-[10px] text-brand-primary">Edge</span></div>
               </div>
             </div>
 
           </div>
 
-          <!-- Columna Derecha (Artefacto Técnico Real / Pipeline Interactivo) -->
+          <!-- Columna Derecha: Componente Visual de Arquitectura Interactivo (Reemplazo del código simulado) -->
           <div class="lg:col-span-5">
-            <div class="bento-container p-4 space-y-3">
+            <div class="bento-container p-5 space-y-4">
               
               <div class="flex items-center justify-between pb-3 border-b border-line-subtle">
                 <div class="flex items-center space-x-2">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  <span class="text-xs font-mono text-neutral-300 font-medium">LIVE_PIPELINE // AUDIT_TRACE</span>
+                  <span class="w-2 h-2 rounded-full bg-brand-primary"></span>
+                  <span class="text-xs font-mono text-white font-medium">PIPELINE DE OPERACIONES EN VIVO</span>
                 </div>
-                <span class="text-[11px] font-mono text-neutral-500">ID: TRACE_8829F4</span>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-surface-2 border border-line-subtle text-emerald-400">STATUS: ACTIVE</span>
               </div>
 
-              <!-- Pipeline Real Step 1 -->
-              <div class="bento-console p-3 space-y-1.5">
-                <div class="flex items-center justify-between text-[11px] font-mono">
-                  <span class="text-neutral-400 font-semibold">NODO 1: INGESTA DE CAMPO (FIELD_DATA)</span>
-                  <span class="text-emerald-400">OK [200]</span>
+              <!-- Diagrama Visual de Flujo de 3 Fases -->
+              <div class="space-y-3">
+                
+                <!-- Fase 1: Ingesta -->
+                <div class="bento-console p-3.5 space-y-1.5 transition-colors">
+                  <div class="flex items-center justify-between text-[11px] font-mono">
+                    <span class="text-neutral-400 font-semibold flex items-center gap-1.5">
+                      <span class="text-brand-primary font-bold">01</span> INPUT DE DATOS EMPRESARIALES
+                    </span>
+                    <span class="text-neutral-500 text-[10px]">INGESTION_GATEWAY</span>
+                  </div>
+                  <div class="text-xs text-neutral-200">
+                    Documentos no estructurados (PDFs, contratos, facturas), ERPs corporativos y APIs de campo.
+                  </div>
+                  <div class="text-[10px] font-mono text-neutral-500 flex items-center gap-2">
+                    <span>Protocolo: TLS 1.3</span>
+                    <span>•</span>
+                    <span>Formatos: JSON / XML / Multimodal</span>
+                  </div>
                 </div>
-                <div class="text-xs font-mono text-neutral-300">
-                  Partes de perforación & despacho (acero, brocas, horas máquina).
+
+                <!-- Conector Visual -->
+                <div class="flex justify-center -my-1 text-neutral-600 font-mono text-xs">
+                  ↓
                 </div>
-                <div class="text-[11px] font-mono text-neutral-500">
-                  Fuente: Tablets en Mina / WhatsApp Enterprise API ➔ Webhook TLS 1.3
+
+                <!-- Fase 2: Orquestación -->
+                <div class="bento-console p-3.5 space-y-1.5 border-l-2 border-l-brand-primary bg-surface-2/90">
+                  <div class="flex items-center justify-between text-[11px] font-mono">
+                    <span class="text-white font-semibold flex items-center gap-1.5">
+                      <span class="text-brand-primary font-bold">02</span> ORQUESTACIÓN DE AGENTES CON IA
+                    </span>
+                    <span class="text-brand-primary text-[10px] font-semibold">VERTEX AI + CLAUDE API</span>
+                  </div>
+                  <div class="text-xs text-neutral-200">
+                    Razonamiento con modelos fundacionales, filtrado PII de privacidad y supervisión Human-in-the-Loop.
+                  </div>
+                  <div class="text-[10px] font-mono text-neutral-400 flex items-center gap-2">
+                    <span class="text-emerald-400">✓ Zero-Data Retention</span>
+                    <span>•</span>
+                    <span>Validación Determinista</span>
+                  </div>
                 </div>
+
+                <!-- Conector Visual -->
+                <div class="flex justify-center -my-1 text-neutral-600 font-mono text-xs">
+                  ↓
+                </div>
+
+                <!-- Fase 3: Automatización -->
+                <div class="bento-console p-3.5 space-y-1.5 transition-colors">
+                  <div class="flex items-center justify-between text-[11px] font-mono">
+                    <span class="text-neutral-400 font-semibold flex items-center gap-1.5">
+                      <span class="text-brand-primary font-bold">03</span> AUTOMATIZACIÓN DE RESULTADOS
+                    </span>
+                    <span class="text-emerald-400 text-[10px]">DELIVERY_NODE</span>
+                  </div>
+                  <div class="text-xs text-neutral-200">
+                    Actualización automática de bases de datos, expedientes técnicos listos y tableros analíticos en tiempo real.
+                  </div>
+                  <div class="text-[10px] font-mono text-neutral-500 flex items-center gap-2">
+                    <span>Salida: BI BigQuery + OpenXML / PDF</span>
+                  </div>
+                </div>
+
               </div>
 
-              <!-- Pipeline Real Step 2 -->
-              <div class="bento-console p-3 space-y-1.5 border-l-2 border-l-brand-primary">
-                <div class="flex items-center justify-between text-[11px] font-mono">
-                  <span class="text-brand-primary font-semibold">NODO 2: RAZONAMIENTO AGÉNTICO & AUDITORÍA</span>
-                  <span class="text-blue-400">RUNNING</span>
-                </div>
-                <div class="text-xs font-mono text-neutral-300">
-                  Orquestación Anthropic Claude (Tool Use / Function Calling) + sanitización PII.
-                </div>
-                <div class="text-[11px] font-mono text-neutral-500">
-                  Supervisión: Human-in-the-Loop ➔ ETL Serverless Google Cloud / BigQuery
-                </div>
-              </div>
-
-              <!-- Pipeline Real Step 3 -->
-              <div class="bento-console p-3 space-y-1.5">
-                <div class="flex items-center justify-between text-[11px] font-mono">
-                  <span class="text-neutral-400 font-semibold">NODO 3: SALIDA DETERMINISTA & BI</span>
-                  <span class="text-neutral-400">EMITTED</span>
-                </div>
-                <div class="text-xs font-mono text-neutral-300">
-                  Cálculo de Costo Unitario ($/metro perforado, $/tonelada acarreada).
-                </div>
-                <div class="text-[11px] font-mono text-neutral-500">
-                  Entrega: Dashboards ejecutivos en tiempo real + Informe OpenXML auditado
-                </div>
-              </div>
-
-              <!-- Telemetry footer -->
-              <div class="pt-2 flex items-center justify-between text-[10px] font-mono text-neutral-500">
-                <span>REGION: southamerica-west1 (SCL/LIM)</span>
-                <span>DATA RETENTION: 0 DAYS</span>
+              <!-- Live Telemetry Bar -->
+              <div class="pt-2 border-t border-line-subtle flex items-center justify-between text-[10px] font-mono text-neutral-500">
+                <span>REGION: southamerica-west1 (Lima/SCL)</span>
+                <span>SECURITY: SOC 2 / ISO 27001 ALIGNED</span>
               </div>
 
             </div>
@@ -204,159 +242,89 @@
       </div>
     </section>
 
-    <!-- BENTO GRID ASIMÉTRICO DE LOS 3 MOTORES DE PRODUCTO -->
+    <!-- SECCIÓN: SOLUCIONES Y CASOS DE USO (3 PILARES CLAROS) -->
     <section id="soluciones" class="py-20 border-b border-line-subtle">
-      <div class="max-w-7xl mx-auto px-4 space-y-8">
+      <div class="max-w-7xl mx-auto px-4 space-y-10">
         
-        <div>
-          <span class="text-xs font-mono text-brand-primary uppercase tracking-wider">Capacidades de Infraestructura</span>
+        <div class="max-w-2xl">
+          <span class="text-xs font-mono text-brand-primary uppercase tracking-wider font-semibold">Pilares de Solución</span>
           <h2 class="text-2xl sm:text-3xl font-semibold text-white mt-1">
-            Los 3 Motores Operativos de Agentrax Perú
+            Soluciones Especializadas para la Productividad Empresarial
           </h2>
-          <p class="text-xs sm:text-sm text-neutral-400 mt-2 max-w-2xl">
-            Sistemas desacoplados diseñados para reemplazar hojas de cálculo frágiles y reportes manuales por flujos agénticos auditables con rigor de ingeniería.
+          <p class="text-xs sm:text-sm text-neutral-400 mt-2">
+            Arquitecturas de Inteligencia Artificial diseñadas para integrarse en la operativa diaria de corporaciones e industrias en América Latina.
           </p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          <!-- CELDA MAYOR (SPAN 7) - Agentes Autónomos & Analítica en Minería e Industria -->
-          <div class="lg:col-span-7 bento-container p-6 flex flex-col justify-between">
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono px-2 py-0.5 rounded bg-surface-2 border border-line-subtle text-neutral-300">MOTOR 01 // AGENTES & OPERACIONES</span>
-                <span class="text-xs font-mono text-neutral-500">INDUSTRY_FOCUS: MINING_ENERGY</span>
+          <!-- Pilar 1: Automatización de Flujos Documentales -->
+          <div class="bento-container p-6 flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="w-9 h-9 rounded bg-surface-2 border border-line-subtle flex items-center justify-center text-brand-primary font-mono text-xs font-bold">
+                01
               </div>
-
-              <h3 class="text-xl font-semibold text-white">
-                Agentes Autónomos & Conciliación Operativa de Campo
+              <h3 class="text-lg font-semibold text-white">
+                Automatización de Flujos Documentales
               </h3>
-
-              <p class="text-xs sm:text-sm text-neutral-400 leading-relaxed">
-                Eliminamos la latencia de 24 a 48 horas en la captura de partes operativos. Nuestros agentes ingieren automáticamente datos no estructurados de contratistas y supervisores (turnos de guardia, consumos de explosivos, desgaste de aceros y despacho de flota), detectan inconsistencias dimensionales en tiempo real y actualizan los modelos de costos unitarios sin intervención manual.
+              <p class="text-xs text-neutral-400 leading-relaxed">
+                Extracción inteligente, conciliación y compilación determinista de contratos, expedientes técnicos, facturación y reportes regulatorios. Eliminamos la carga manual garantizando 100% de coherencia estructural sin alucinaciones de formato.
               </p>
-
-              <!-- Módulos de impacto operacional -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div class="p-3 bg-surface-2 border border-line-subtle rounded">
-                  <div class="text-xs font-mono font-medium text-white">Auditoría Automática de Partes</div>
-                  <div class="text-[11px] text-neutral-400 mt-1">Cruce algorítmico entre horómetros de pala/camión y toneladas reportadas al chancador.</div>
-                </div>
-                <div class="p-3 bg-surface-2 border border-line-subtle rounded">
-                  <div class="text-xs font-mono font-medium text-white">Costos Unitarios al Cierre de Turno</div>
-                  <div class="text-[11px] text-neutral-400 mt-1">Visibilidad inmediata del ratio $/metro perforado y $/tonelada transportada.</div>
-                </div>
-              </div>
+              <ul class="text-[11px] text-neutral-400 font-mono space-y-1.5 pt-2">
+                <li class="flex items-center gap-2"><span class="text-brand-primary">•</span> Extracción de esquemas estructurados</li>
+                <li class="flex items-center gap-2"><span class="text-brand-primary">•</span> Compilación determinista OpenXML y PDF</li>
+                <li class="flex items-center gap-2"><span class="text-brand-primary">•</span> Auditoría de consistencia matemática</li>
+              </ul>
             </div>
-
-            <div class="pt-6 mt-6 border-t border-line-subtle flex items-center justify-between text-xs font-mono text-neutral-500">
-              <span>Stack: Anthropic Claude 3.5 + Google Cloud BigQuery</span>
-              <span class="text-neutral-400">Verificado en operaciones andinas</span>
+            <div class="pt-4 border-t border-line-subtle text-[11px] font-mono text-neutral-500">
+              Caso de uso: Expedientes de Ingeniería & Legal
             </div>
           </div>
 
-          <!-- CELDA ALTA (SPAN 5) - Compilador Editorial Determinista (Doc-formatter) -->
-          <div id="doc-formatter" class="lg:col-span-5 bento-container p-6 flex flex-col justify-between">
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono px-2 py-0.5 rounded bg-surface-2 border border-line-subtle text-neutral-300">MOTOR 02 // COMPILADOR DETERMINISTA</span>
-                <span class="text-xs font-mono text-brand-primary">ENGINE-VS-PROFILE</span>
+          <!-- Pilar 2: Agentes Operativos Autónomos -->
+          <div class="bento-container p-6 flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="w-9 h-9 rounded bg-surface-2 border border-line-subtle flex items-center justify-center text-brand-primary font-mono text-xs font-bold">
+                02
               </div>
-
-              <h3 class="text-xl font-semibold text-white">
-                Doc-formatter: Compilación Editorial sin Alucinación
+              <h3 class="text-lg font-semibold text-white">
+                Agentes Operativos Autónomos
               </h3>
-
-              <p class="text-xs sm:text-sm text-neutral-400 leading-relaxed">
-                Arquitectura de compilación documental desacoplada que transforma esquemas canónicos <strong class="text-neutral-300">DocSource</strong> (Markdown + YAML) en propuestas corporativas, informes de pre-factibilidad y expedientes de ingeniería en Word OpenXML y PDF. Cumple rigurosamente el estándar tipográfico Hermann Zapf, tablas LaTeX booktabs y garantiza 0 páginas huérfanas con 100% determinismo bit a bit.
+              <p class="text-xs text-neutral-400 leading-relaxed">
+                Sistemas multi-agente con capacidades de llamada a herramientas (*tool use* y *function calling*) para ejecutar procesos complejos de back-office, coordinación interdepartamental y resolución de incidencias con supervisión humana (*Human-in-the-Loop*).
               </p>
-
-              <!-- Split-pane visual inspector -->
-              <div class="bento-console p-3 space-y-2 text-[11px] font-mono">
-                <div class="flex items-center justify-between text-neutral-500 pb-1 border-b border-line-subtle">
-                  <span>ENTRADA: docsource.yaml</span>
-                  <span>SALIDA: expedientes.docx / pdf</span>
-                </div>
-                <div class="grid grid-cols-2 gap-2 text-[10px] text-neutral-400">
-                  <div class="p-1.5 bg-surface-1 border border-line-subtle rounded">
-                    title: "Estudio Factibilidad"<br>
-                    profile: sig-pmo@1<br>
-                    tables: latex_booktabs
-                  </div>
-                  <div class="p-1.5 bg-surface-1 border border-line-subtle rounded text-emerald-400">
-                    ✓ AST Validation: OK<br>
-                    ✓ Orphan Pages: 0<br>
-                    ✓ Reproducibility: 100%
-                  </div>
-                </div>
-              </div>
-
-              <div class="text-[11px] text-neutral-500 italic">
-                * Incluye módulo secundario de rigor metodológico y formalización para investigación y expedientes científicos.
-              </div>
+              <ul class="text-[11px] text-neutral-400 font-mono space-y-1.5 pt-2">
+                <li class="flex items-center gap-2"><span class="text-brand-primary">•</span> Integración bidireccional con ERP y CRM</li>
+                <li class="flex items-center gap-2"><span class="text-brand-primary">•</span> Orquestación mediante Claude API & Vertex</li>
+                <li class="flex items-center gap-2"><span class="text-brand-primary">•</span> Puntos de control para operaciones críticas</li>
+              </ul>
             </div>
-
-            <div class="pt-4 border-t border-line-subtle text-xs font-mono text-neutral-500">
-              Arquitectura: Parser ➔ AST ➔ Layout Rules ➔ Pure OpenXML Emitter
+            <div class="pt-4 border-t border-line-subtle text-[11px] font-mono text-neutral-500">
+              Caso de uso: Conciliación de Operaciones & Logística
             </div>
           </div>
 
-          <!-- CELDA INFERIOR COMPLETA (SPAN 12) - Arquitectura Híbrida Cloud & AI Safety -->
-          <div id="arquitectura" class="lg:col-span-12 bento-container p-6 space-y-6">
-            
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <span class="text-xs font-mono text-brand-primary uppercase tracking-wider">MOTOR 03 // CLOUD & SAFETY</span>
-                <h3 class="text-xl font-semibold text-white mt-1">
-                  Arquitectura Híbrida Enterprise: Google Cloud + Anthropic Claude
-                </h3>
+          <!-- Pilar 3: Analítica Predictiva de Procesos -->
+          <div class="bento-container p-6 flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="w-9 h-9 rounded bg-surface-2 border border-line-subtle flex items-center justify-center text-brand-primary font-mono text-xs font-bold">
+                03
               </div>
-              <div class="flex flex-wrap gap-2 text-[11px] font-mono">
-                <span class="px-2.5 py-1 rounded bg-surface-2 border border-line-subtle text-neutral-300">ZERO-DATA RETENTION (ZDR)</span>
-                <span class="px-2.5 py-1 rounded bg-surface-2 border border-line-subtle text-neutral-300">MULTI-TENANT VPC ISOLATION</span>
-                <span class="px-2.5 py-1 rounded bg-surface-2 border border-line-subtle text-emerald-400">CUMPLIMIENTO LEY N° 29733 (PERÚ)</span>
-              </div>
+              <h3 class="text-lg font-semibold text-white">
+                Analítica Predictiva de Procesos
+              </h3>
+              <p class="text-xs text-neutral-400 leading-relaxed">
+                Modelos de machine learning y análisis en tiempo real sobre data lakes corporativos para anticipar desviaciones de costos unitarios, predecir demanda operativa y transformar datos dispersos en tableros de decisiones estratégicas.
+              </p>
+              <ul class="text-[11px] text-neutral-400 font-mono space-y-1.5 pt-2">
+                <li class="flex items-center gap-2"><span class="text-brand-primary">•</span> Pipelines de datos en Google Cloud BigQuery</li>
+                <li class="flex items-center gap-2"><span class="text-brand-primary">•</span> Modelos de proyección de costos en tiempo real</li>
+                <li class="flex items-center gap-2"><span class="text-brand-primary">•</span> Dashboards ejecutivos automatizados</li>
+              </ul>
             </div>
-
-            <p class="text-xs sm:text-sm text-neutral-400 max-w-4xl">
-              Diseñado según las directivas de evaluación de los comités de Google Cloud Startups y Anthropic. Ningún dato sensible entra a los modelos fundacionales sin anonimización previa, y los tensores no retienen información propietaria.
-            </p>
-
-            <!-- Diagrama técnico de bloques conectados por líneas de 1px -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 pt-2 text-xs font-mono">
-              
-              <div class="p-3 bg-surface-2 border border-line-subtle rounded space-y-1">
-                <div class="text-[10px] text-neutral-500">BLOQUE 01</div>
-                <div class="font-semibold text-white">Ingesta de Campo / ERP</div>
-                <div class="text-[11px] text-neutral-400">APIs WhatsApp, SAP, PostgreSQL y sensores IoT.</div>
-              </div>
-
-              <div class="p-3 bg-surface-2 border border-line-subtle rounded space-y-1">
-                <div class="text-[10px] text-brand-primary">BLOQUE 02</div>
-                <div class="font-semibold text-white">Sanitización & PII Filter</div>
-                <div class="text-[11px] text-neutral-400">Cifrado TLS 1.3, hashing irreversible y aislamiento VPC.</div>
-              </div>
-
-              <div class="p-3 bg-surface-2 border border-line-subtle rounded space-y-1 border-l-2 border-l-brand-primary">
-                <div class="text-[10px] text-brand-primary">BLOQUE 03</div>
-                <div class="font-semibold text-white">Google Cloud + Anthropic</div>
-                <div class="text-[11px] text-neutral-400">Vertex AI, Cloud Run & Claude 3.5 Sonnet / Opus.</div>
-              </div>
-
-              <div class="p-3 bg-surface-2 border border-line-subtle rounded space-y-1">
-                <div class="text-[10px] text-emerald-400">BLOQUE 04</div>
-                <div class="font-semibold text-white">Human-in-the-Loop</div>
-                <div class="text-[11px] text-neutral-400">Puntos de control para órdenes financieras y de mina.</div>
-              </div>
-
-              <div class="p-3 bg-surface-2 border border-line-subtle rounded space-y-1">
-                <div class="text-[10px] text-neutral-500">BLOQUE 05</div>
-                <div class="font-semibold text-white">Entregables Producción</div>
-                <div class="text-[11px] text-neutral-400">Doc-formatter OpenXML & BI BigQuery en tiempo real.</div>
-              </div>
-
+            <div class="pt-4 border-t border-line-subtle text-[11px] font-mono text-neutral-500">
+              Caso de uso: Eficiencia de Costos Unitarios
             </div>
-
           </div>
 
         </div>
@@ -364,72 +332,160 @@
       </div>
     </section>
 
-    <!-- CONSOLA DE ADMISIÓN DE PROYECTOS B2B -->
+    <!-- SECCIÓN: STACK TECNOLÓGICO Y SEGURIDAD ENTERPRISE -->
+    <section id="arquitectura" class="py-20 border-b border-line-subtle bg-surface-1/40">
+      <div class="max-w-7xl mx-auto px-4 space-y-10">
+        
+        <div class="max-w-2xl">
+          <span class="text-xs font-mono text-brand-primary uppercase tracking-wider font-semibold">Infraestructura & Protección</span>
+          <h2 class="text-2xl sm:text-3xl font-semibold text-white mt-1">
+            Stack Cloud Nativo y Rigor de Seguridad Enterprise
+          </h2>
+          <p class="text-xs sm:text-sm text-neutral-400 mt-2">
+            Diseñado para cumplir con los estándares técnicos y de seguridad más exigentes de la industria en la nube y programas de aceleración de IA.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Bloque Stack Tecnológico -->
+          <div class="bento-container p-6 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-line-subtle">
+              <span class="text-xs font-mono text-brand-primary font-semibold">INFRAESTRUCTURA CLOUD & MODELOS DE IA</span>
+              <span class="text-[10px] font-mono text-neutral-500">CLOUD NATIVE</span>
+            </div>
+            <p class="text-xs text-neutral-300 leading-relaxed">
+              Combinamos los mejores componentes de cómputo en la nube e inferencia fundacional para garantizar disponibilidad y escalabilidad continua:
+            </p>
+            <div class="space-y-3 pt-1">
+              <div class="p-3 bg-surface-2 border border-line-subtle rounded flex items-start gap-3">
+                <div class="w-7 h-7 rounded bg-surface-1 border border-line-subtle flex items-center justify-center text-brand-primary font-mono text-xs flex-shrink-0 mt-0.5">
+                  GC
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-white">Google Cloud Platform</div>
+                  <div class="text-[11px] text-neutral-400">Microservicios en Cloud Run, analítica con BigQuery y orquestación empresarial con Vertex AI.</div>
+                </div>
+              </div>
+
+              <div class="p-3 bg-surface-2 border border-line-subtle rounded flex items-start gap-3">
+                <div class="w-7 h-7 rounded bg-surface-1 border border-line-subtle flex items-center justify-center text-brand-primary font-mono text-xs flex-shrink-0 mt-0.5">
+                  CL
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-white">Anthropic Claude API</div>
+                  <div class="text-[11px] text-neutral-400">Modelos de razonamiento profundo (Claude 3.5 Sonnet / Opus) para orquestación agéntica y comprensión contextual.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloque Seguridad y Privacidad -->
+          <div id="seguridad" class="bento-container p-6 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-line-subtle">
+              <span class="text-xs font-mono text-emerald-400 font-semibold">CIBERSEGURIDAD Y PRIVACIDAD DE DATOS</span>
+              <span class="text-[10px] font-mono text-neutral-500">ENTERPRISE COMPLIANCE</span>
+            </div>
+            <p class="text-xs text-neutral-300 leading-relaxed">
+              Garantizamos la soberanía total y la estricta confidencialidad de la información de su organización:
+            </p>
+            <div class="space-y-3 pt-1">
+              <div class="p-3 bg-surface-2 border border-line-subtle rounded flex items-start gap-3">
+                <div class="w-7 h-7 rounded bg-surface-1 border border-line-subtle flex items-center justify-center text-emerald-400 font-mono text-xs flex-shrink-0 mt-0.5">
+                  ✓
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-white">Política de Zero-Data Retention (ZDR)</div>
+                  <div class="text-[11px] text-neutral-400">Ningún dato corporativo, log o consulta de clientes se utiliza para entrenar modelos públicos de Inteligencia Artificial.</div>
+                </div>
+              </div>
+
+              <div class="p-3 bg-surface-2 border border-line-subtle rounded flex items-start gap-3">
+                <div class="w-7 h-7 rounded bg-surface-1 border border-line-subtle flex items-center justify-center text-emerald-400 font-mono text-xs flex-shrink-0 mt-0.5">
+                  ✓
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-white">Cifrado E2E & Ley N° 29733 (Perú)</div>
+                  <div class="text-[11px] text-neutral-400">Cifrado TLS 1.3 en tránsito y AES-256 en reposo, con apego a la legislación de protección de datos personales y estándares GDPR.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECCIÓN: LLAMADO A LA ACCIÓN (CTA) Y CONTACTO -->
     <section id="contacto" class="py-20 border-b border-line-subtle">
       <div class="max-w-4xl mx-auto px-4">
         
         <div class="bento-container p-6 sm:p-10 space-y-6">
           
           <div class="border-b border-line-subtle pb-4">
-            <span class="text-xs font-mono text-brand-primary uppercase tracking-wider">CANAL CORPORATIVO FORMAL</span>
+            <span class="text-xs font-mono text-brand-primary uppercase tracking-wider font-semibold">CANAL COMERCIAL OFICIAL</span>
             <h2 class="text-2xl font-semibold text-white mt-1">
-              Consola de Admisión y Evaluación de Factibilidad Técnica
+              Hablemos de su Próximo Salto Operativo con IA
             </h2>
             <p class="text-xs sm:text-sm text-neutral-400 mt-2">
-              Canal directo hacia nuestro equipo de ingeniería. Las solicitudes son canalizadas de forma prioritaria a <strong class="text-neutral-200">comercial@agentraxperu.com</strong>.
+              Solicite una demostración personalizada o una evaluación de factibilidad técnica. Nuestro equipo le responderá directamente desde <strong class="text-neutral-200">comercial@agentraxperu.com</strong>.
             </p>
           </div>
 
-          <form id="project-console-form" class="space-y-4" onsubmit="handleConsoleSubmit(event)">
+          <form id="contact-form" class="space-y-4" onsubmit="handleContactSubmit(event)">
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label for="contact-name" class="block text-xs font-mono text-neutral-400 mb-1">NOMBRE Y CARGO *</label>
-                <input type="text" id="contact-name" required placeholder="Ej. Ing. Marco Vidal - Gerente de Operaciones" class="w-full px-3 py-2 bg-surface-canvas border border-line-subtle focus:border-line-hover text-white text-xs rounded font-sans focus:outline-none">
+                <label for="name" class="block text-xs font-mono text-neutral-400 mb-1">NOMBRE Y CARGO *</label>
+                <input type="text" id="name" required placeholder="Ej. Carlos Mendoza - Director de Operaciones" class="w-full px-3 py-2 bg-surface-canvas border border-line-subtle focus:border-line-hover text-white text-xs rounded font-sans focus:outline-none">
               </div>
 
               <div>
-                <label for="contact-company" class="block text-xs font-mono text-neutral-400 mb-1">EMPRESA U ORGANIZACIÓN *</label>
-                <input type="text" id="contact-company" required placeholder="Ej. Minera Los Andes S.A.A." class="w-full px-3 py-2 bg-surface-canvas border border-line-subtle focus:border-line-hover text-white text-xs rounded font-sans focus:outline-none">
+                <label for="company" class="block text-xs font-mono text-neutral-400 mb-1">EMPRESA U ORGANIZACIÓN *</label>
+                <input type="text" id="company" required placeholder="Ej. Corporación Industrial Andina S.A." class="w-full px-3 py-2 bg-surface-canvas border border-line-subtle focus:border-line-hover text-white text-xs rounded font-sans focus:outline-none">
               </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label for="contact-email" class="block text-xs font-mono text-neutral-400 mb-1">CORREO CORPORATIVO *</label>
-                <input type="email" id="contact-email" required placeholder="nombre@empresa.com" class="w-full px-3 py-2 bg-surface-canvas border border-line-subtle focus:border-line-hover text-white text-xs rounded font-sans focus:outline-none font-mono">
+                <label for="email" class="block text-xs font-mono text-neutral-400 mb-1">CORREO CORPORATIVO *</label>
+                <input type="email" id="email" required placeholder="nombre@empresa.com" class="w-full px-3 py-2 bg-surface-canvas border border-line-subtle focus:border-line-hover text-white text-xs rounded font-sans focus:outline-none font-mono">
               </div>
 
               <div>
-                <label for="contact-sector" class="block text-xs font-mono text-neutral-400 mb-1">SECTOR INDUSTRIAL *</label>
-                <select id="contact-sector" class="w-full px-3 py-2 bg-surface-canvas border border-line-subtle focus:border-line-hover text-white text-xs rounded font-sans focus:outline-none">
-                  <option value="Mineria">Minería y Metalurgia</option>
-                  <option value="Energia">Energía, Petróleo y Gas</option>
-                  <option value="Manufactura">Manufactura e Industria Pesada</option>
-                  <option value="Logistica">Logística y Cadena de Suministro</option>
-                  <option value="Consultoria">Consultoría Técnica y Servicios</option>
-                  <option value="Otro">Otro Sector</option>
+                <label for="pillar" class="block text-xs font-mono text-neutral-400 mb-1">ÁREA DE INTERÉS *</label>
+                <select id="pillar" class="w-full px-3 py-2 bg-surface-canvas border border-line-subtle focus:border-line-hover text-white text-xs rounded font-sans focus:outline-none">
+                  <option value="Flujos Documentales">Automatización de Flujos Documentales</option>
+                  <option value="Agentes Autónomos">Agentes Operativos Autónomos</option>
+                  <option value="Analitica Predictiva">Analítica Predictiva de Procesos</option>
+                  <option value="Consultoria Integral">Consultoría & Arquitectura de IA Integral</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label for="contact-scope" class="block text-xs font-mono text-neutral-400 mb-1">ALCANCE TÉCNICO DEL REQUERIMIENTO *</label>
-              <textarea id="contact-scope" rows="4" required placeholder="Describa el flujo operativo a optimizar, volúmenes de partes de campo o necesidades de compilación documental..." class="w-full px-3 py-2 bg-surface-canvas border border-line-subtle focus:border-line-hover text-white text-xs rounded font-sans focus:outline-none"></textarea>
+              <label for="message" class="block text-xs font-mono text-neutral-400 mb-1">DESCRIPCIÓN DEL REQUERIMIENTO *</label>
+              <textarea id="message" rows="3" required placeholder="Cuéntenos sobre el proceso, volumen de documentos o desafío operativo que busca optimizar..." class="w-full px-3 py-2 bg-surface-canvas border border-line-subtle focus:border-line-hover text-white text-xs rounded font-sans focus:outline-none"></textarea>
             </div>
 
             <div class="text-[11px] font-mono text-neutral-500">
-              Al remitir esta solicitud confirma su conformidad con el protocolo <a href="javascript:void(0)" onclick="openModal('privacy-modal')" class="text-neutral-300 underline">Zero-Data Retention</a> y la Ley N° 29733 de Protección de Datos Personales del Perú.
+              Al enviar su consulta acepta nuestra <a href="javascript:void(0)" onclick="openModal('privacy-modal')" class="text-neutral-300 underline">Política de Privacidad</a> (Ley N° 29733) y el protocolo de confidencialidad Zero-Data Retention.
             </div>
 
-            <button type="submit" class="w-full py-3 rounded bg-brand-primary hover:bg-blue-600 text-white font-medium text-xs transition-all flex items-center justify-center gap-2">
-              <span>Remitir Requerimiento a comercial@agentraxperu.com</span>
-              <span class="font-mono">→</span>
-            </button>
+            <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+              <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded bg-brand-primary hover:bg-blue-600 text-white font-medium text-xs transition-all flex items-center justify-center gap-2">
+                <span>Enviar Consulta a comercial@agentraxperu.com</span>
+                <span class="font-mono">→</span>
+              </button>
+              <a href="mailto:comercial@agentraxperu.com" class="w-full sm:w-auto px-4 py-2.5 rounded bg-surface-2 border border-line-subtle hover:border-line-hover text-neutral-300 text-xs font-mono text-center transition-all">
+                Enviar Directo por Correo
+              </a>
+            </div>
           </form>
 
-          <div id="console-form-feedback" class="hidden p-3 rounded bg-surface-2 border border-line-subtle text-emerald-400 text-xs font-mono text-center">
-            [TRANSMISIÓN_INICIADA]: Se abrirá su cliente de correo con el despacho preformateado hacia comercial@agentraxperu.com.
+          <div id="form-feedback" class="hidden p-3 rounded bg-surface-2 border border-line-subtle text-emerald-400 text-xs font-mono text-center">
+            ✓ Solicitud preparada. Se abrirá su cliente de correo para confirmar el despacho formal a comercial@agentraxperu.com.
           </div>
 
         </div>
@@ -439,74 +495,81 @@
 
   </main>
 
-  <!-- FOOTER LEGAL COMPLETO -->
-  <footer id="compliance" class="bg-surface-canvas border-t border-line-subtle py-12 text-xs text-neutral-400">
+  <!-- FOOTER FORMAL -->
+  <footer class="bg-surface-canvas border-t border-line-subtle py-12 text-xs text-neutral-400">
     <div class="max-w-7xl mx-auto px-4 space-y-8">
       
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-line-subtle">
         
+        <!-- Info Corporativa -->
         <div class="md:col-span-2 space-y-3">
           <div class="flex items-center space-x-2">
-            <span class="font-semibold text-white text-sm tracking-tight">AGENTRAX S.A.C.</span>
-            <span class="text-[10px] font-mono px-1 py-0.2 bg-surface-2 border border-line-subtle text-neutral-400 rounded">RUC_REGISTRADO</span>
+            <span class="font-semibold text-white text-sm tracking-tight">AGENTRAX PERÚ</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.2 bg-surface-2 border border-line-subtle text-neutral-400 rounded">S.A.C.</span>
           </div>
           <p class="text-xs text-neutral-400 max-w-md leading-relaxed">
-            Sociedad legalmente constituida en Lima, República del Perú. Proveedor de infraestructura computacional de Inteligencia Artificial, agentes autónomos y compilación documental determinista para el mercado corporativo de Latinoamérica.
+            Startup de tecnología y soluciones SaaS de Inteligencia Artificial aplicada a la automatización de procesos operativos, gestión documental inteligente y analítica para empresas en Perú y Latinoamérica.
           </p>
           <div class="font-mono text-[11px] text-neutral-300">
-            Canal oficial: <a href="mailto:comercial@agentraxperu.com" class="text-brand-primary hover:underline">comercial@agentraxperu.com</a>
+            Contacto oficial: <a href="mailto:comercial@agentraxperu.com" class="text-brand-primary hover:underline">comercial@agentraxperu.com</a>
           </div>
         </div>
 
+        <!-- Enlaces Rápidos -->
         <div>
-          <div class="text-xs font-mono uppercase text-white font-semibold mb-3">Soluciones</div>
-          <ul class="space-y-1.5 text-xs text-neutral-400 font-sans">
-            <li><a href="#soluciones" class="hover:text-white transition-colors">Agentes en Minería & Operaciones</a></li>
-            <li><a href="#doc-formatter" class="hover:text-white transition-colors">Doc-formatter Engine</a></li>
-            <li><a href="#arquitectura" class="hover:text-white transition-colors">Arquitectura Google Cloud + Claude</a></li>
-            <li><a href="#contacto" class="hover:text-white transition-colors">Evaluación de Factibilidad</a></li>
+          <div class="text-xs font-mono uppercase text-white font-semibold mb-3">Plataforma</div>
+          <ul class="space-y-1.5 text-xs text-neutral-400">
+            <li><a href="#soluciones" class="hover:text-white transition-colors">Flujos Documentales</a></li>
+            <li><a href="#soluciones" class="hover:text-white transition-colors">Agentes Autónomos</a></li>
+            <li><a href="#soluciones" class="hover:text-white transition-colors">Analítica de Procesos</a></li>
+            <li><a href="#arquitectura" class="hover:text-white transition-colors">Stack Cloud & Inferencia</a></li>
           </ul>
         </div>
 
+        <!-- Enlaces Legales Críticos -->
         <div>
-          <div class="text-xs font-mono uppercase text-white font-semibold mb-3">Compliance & Legal</div>
-          <ul class="space-y-1.5 text-xs text-neutral-400 font-sans">
-            <li><a href="javascript:void(0)" onclick="openModal('privacy-modal')" class="hover:text-white transition-colors">Política de Privacidad (Ley N° 29733)</a></li>
-            <li><a href="javascript:void(0)" onclick="openModal('zdr-modal')" class="hover:text-white transition-colors">Acuerdo Zero-Data Retention (ZDR)</a></li>
-            <li><a href="javascript:void(0)" onclick="openModal('terms-modal')" class="hover:text-white transition-colors">Términos y Condiciones Corporativos</a></li>
-            <li class="pt-1 text-[11px] font-mono text-neutral-500">Sede: Lima, Perú</li>
+          <div class="text-xs font-mono uppercase text-white font-semibold mb-3">Legal & Privacidad</div>
+          <ul class="space-y-1.5 text-xs text-neutral-400">
+            <li><a href="javascript:void(0)" onclick="openModal('privacy-modal')" class="hover:text-white transition-colors">Política de Privacidad</a></li>
+            <li><a href="javascript:void(0)" onclick="openModal('terms-modal')" class="hover:text-white transition-colors">Términos del Servicio</a></li>
+            <li><a href="privacy.html" class="hover:text-white transition-colors">Aviso de Privacidad (Enlace Directo)</a></li>
+            <li><a href="terms.html" class="hover:text-white transition-colors">Términos de Servicio (Enlace Directo)</a></li>
+            <li class="pt-1 text-[11px] font-mono text-neutral-500">Jurisdicción: Lima, Perú</li>
           </ul>
         </div>
 
       </div>
 
+      <!-- Barra Inferior de Copyright y Telemetría -->
       <div class="flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-neutral-500 gap-4">
         <div>
-          © 2026 AGENTRAX S.A.C. Todos los derechos reservados.
+          © 2026 Agentrax Perú. Todos los derechos reservados.
         </div>
         <div class="flex items-center space-x-3">
-          <span>DOMINIO: agentraxperu.com</span>
+          <span>DOMINIO: <strong class="text-neutral-400">agentraxperu.com</strong></span>
           <span>•</span>
-          <span>CLOUD: southamerica-west1</span>
+          <span>EMAIL: <strong class="text-neutral-400">comercial@agentraxperu.com</strong></span>
           <span>•</span>
-          <span class="text-emerald-400">[TLS_1.3_ENFORCED]</span>
+          <span class="text-emerald-400">[TLS_1.3_VERIFIED]</span>
         </div>
       </div>
 
     </div>
   </footer>
 
-  <!-- MODAL: PRIVACIDAD (LEY N° 29733) -->
+  <!-- MODAL: POLÍTICA DE PRIVACIDAD (LEY N° 29733) -->
   <div id="privacy-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bento-container bg-surface-1 max-w-2xl w-full max-h-[80vh] flex flex-col p-6 space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-line-subtle">
-        <h3 class="text-sm font-semibold font-mono text-white">POLÍTICA DE PRIVACIDAD // LEY N° 29733 (PERÚ)</h3>
+        <h3 class="text-sm font-semibold font-mono text-white">POLÍTICA DE PRIVACIDAD Y PROTECCIÓN DE DATOS // LEY N° 29733</h3>
         <button onclick="closeModal('privacy-modal')" class="text-neutral-400 hover:text-white font-mono text-xs">✕ CERRAR</button>
       </div>
-      <div class="overflow-y-auto text-xs text-neutral-400 space-y-3 leading-relaxed pr-2">
-        <p><strong>Razón Social:</strong> AGENTRAX S.A.C., con domicilio legal en Lima, República del Perú.</p>
-        <p>En estricto apego a la <strong>Ley N° 29733</strong> (Ley de Protección de Datos Personales en el Perú) y su reglamento, AGENTRAX S.A.C. garantiza que los datos personales y técnicos recabados a través de formularios de contacto y plataformas operativas se tratan de forma confidencial y segura.</p>
-        <p>Los datos son recopilados con el único fin de atender consultas comerciales, celebrar acuerdos de confidencialidad (NDA) y ejecutar proyectos de transformación digital contratados. El titular puede ejercer sus derechos ARCO escribiendo a <strong>comercial@agentraxperu.com</strong>.</p>
+      <div class="overflow-y-auto text-xs text-neutral-300 space-y-3 leading-relaxed pr-2">
+        <p><strong>Titular:</strong> Agentrax Perú (agentraxperu.com), Lima, República del Perú.</p>
+        <p>En estricto cumplimiento de la <strong>Ley N° 29733</strong> (Ley de Protección de Datos Personales en el Perú) y su reglamento (D.S. 003-2013-JUS), garantizamos la confidencialidad y tratamiento seguro de los datos personales y técnicos recabados a través de formularios de contacto y plataformas operativas.</p>
+        <p><strong>Finalidad del Tratamiento:</strong> Atender consultas comerciales, demostraciones de software y ejecución de servicios tecnológicos contratados.</p>
+        <p><strong>Compromiso Zero-Data Retention para IA:</strong> Garantizamos explícitamente que ningún dato confidencial o corporativo es utilizado para entrenar modelos públicos de Inteligencia Artificial.</p>
+        <p><strong>Ejercicio de Derechos ARCO:</strong> Puede ejercer sus derechos de Acceso, Rectificación, Cancelación y Oposición remitiendo una solicitud a <strong class="text-white">comercial@agentraxperu.com</strong>.</p>
       </div>
       <div class="pt-3 border-t border-line-subtle flex justify-end">
         <button onclick="closeModal('privacy-modal')" class="px-3 py-1.5 rounded bg-surface-2 border border-line-subtle text-xs font-mono text-white hover:bg-neutral-800">ENTENDIDO</button>
@@ -514,39 +577,18 @@
     </div>
   </div>
 
-  <!-- MODAL: ACUERDO ZERO-DATA RETENTION (ZDR) -->
-  <div id="zdr-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bento-container bg-surface-1 max-w-2xl w-full max-h-[80vh] flex flex-col p-6 space-y-4">
-      <div class="flex items-center justify-between pb-3 border-b border-line-subtle">
-        <h3 class="text-sm font-semibold font-mono text-white">AI SAFETY PROTOCOL // ZERO-DATA RETENTION (ZDR)</h3>
-        <button onclick="closeModal('zdr-modal')" class="text-neutral-400 hover:text-white font-mono text-xs">✕ CERRAR</button>
-      </div>
-      <div class="overflow-y-auto text-xs text-neutral-400 space-y-3 leading-relaxed pr-2">
-        <p><strong>Garantía de Soberanía de Datos:</strong></p>
-        <p>AGENTRAX S.A.C. implementa acuerdos comerciales de nivel empresarial con sus proveedores de modelos fundacionales (Google Cloud Vertex AI y Anthropic Claude API) que garantizan que:</p>
-        <ul class="list-disc pl-5 space-y-1 text-neutral-300">
-          <li>Ningún dato transaccional, operativo o de telemetría de minería e industria es almacenado para reentrenar modelos públicos.</li>
-          <li>Los pesos y tensores operan en memoria efímera sin persistencia de contexto posterior a la inferencia.</li>
-          <li>Se implementan filtros de datos sensibles (PII Sanitization) antes de cualquier despacho hacia APIs en la nube.</li>
-        </ul>
-      </div>
-      <div class="pt-3 border-t border-line-subtle flex justify-end">
-        <button onclick="closeModal('zdr-modal')" class="px-3 py-1.5 rounded bg-surface-2 border border-line-subtle text-xs font-mono text-white hover:bg-neutral-800">ENTENDIDO</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: TÉRMINOS Y CONDICIONES -->
+  <!-- MODAL: TÉRMINOS DEL SERVICIO -->
   <div id="terms-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bento-container bg-surface-1 max-w-2xl w-full max-h-[80vh] flex flex-col p-6 space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-line-subtle">
-        <h3 class="text-sm font-semibold font-mono text-white">TÉRMINOS Y CONDICIONES // AGENTRAX S.A.C.</h3>
+        <h3 class="text-sm font-semibold font-mono text-white">TÉRMINOS Y CONDICIONES DEL SERVICIO // AGENTRAX PERÚ</h3>
         <button onclick="closeModal('terms-modal')" class="text-neutral-400 hover:text-white font-mono text-xs">✕ CERRAR</button>
       </div>
-      <div class="overflow-y-auto text-xs text-neutral-400 space-y-3 leading-relaxed pr-2">
-        <p><strong>1. Ámbito de Aplicación:</strong> Los presentes términos regulan la provisión de software, consultoría en inteligencia artificial y compilación documental prestados por AGENTRAX S.A.C.</p>
-        <p><strong>2. Propiedad Intelectual:</strong> Los algoritmos base, el motor Doc-formatter y las arquitecturas multi-agente son propiedad exclusiva de AGENTRAX S.A.C. Los datos y entregables generados pertenecen al cliente contratante.</p>
-        <p><strong>3. Jurisdicción:</strong> Toda controversia se rige bajo la legislación de la República del Perú y se somete a los tribunales de Lima.</p>
+      <div class="overflow-y-auto text-xs text-neutral-300 space-y-3 leading-relaxed pr-2">
+        <p><strong>1. Ámbito y Aceptación:</strong> Los presentes Términos regulan el acceso y uso del sitio web <strong>agentraxperu.com</strong> y los servicios tecnológicos y SaaS provistos por Agentrax Perú.</p>
+        <p><strong>2. Servicios:</strong> Agentrax suministra soluciones de software, automatización de procesos mediante agentes autónomos de IA y consultoría en la nube orientadas a la optimización de productividad empresarial.</p>
+        <p><strong>3. Propiedad Intelectual:</strong> Los algoritmos base, interfaces y arquitecturas son propiedad de Agentrax Perú o sus licenciantes. Los datos procesados pertenecen en exclusiva a cada cliente.</p>
+        <p><strong>4. Ley Aplicable y Jurisdicción:</strong> Este acuerdo se rige bajo las leyes de la República del Perú. Para cualquier controversia, las partes se someten a los juzgados y tribunales del distrito judicial de Lima.</p>
       </div>
       <div class="pt-3 border-t border-line-subtle flex justify-end">
         <button onclick="closeModal('terms-modal')" class="px-3 py-1.5 rounded bg-surface-2 border border-line-subtle text-xs font-mono text-white hover:bg-neutral-800">ENTENDIDO</button>
@@ -554,8 +596,9 @@
     </div>
   </div>
 
+  <!-- JAVASCRIPT LOGIC -->
   <script>
-    // Modal Helpers
+    // Modal Management
     function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
       document.body.classList.add('overflow-hidden');
@@ -567,34 +610,33 @@
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeModal('privacy-modal');
-        closeModal('zdr-modal');
         closeModal('terms-modal');
       }
     });
 
-    // Console Contact Form Submit Handler
-    function handleConsoleSubmit(event) {
+    // Contact Form Handler with Mailto Fallback
+    function handleContactSubmit(event) {
       event.preventDefault();
-      const name = document.getElementById('contact-name').value;
-      const company = document.getElementById('contact-company').value;
-      const email = document.getElementById('contact-email').value;
-      const sector = document.getElementById('contact-sector').value;
-      const scope = document.getElementById('contact-scope').value;
+      const name = document.getElementById('name').value;
+      const company = document.getElementById('company').value;
+      const email = document.getElementById('email').value;
+      const pillar = document.getElementById('pillar').value;
+      const message = document.getElementById('message').value;
 
-      const subject = encodeURIComponent(`[PROYECTO B2B] Evaluación de Factibilidad - ${company}`);
+      const subject = encodeURIComponent(`[SOLICITUD DEMO AGENTRAX] ${company} - ${name}`);
       const body = encodeURIComponent(
-        `Estimado Equipo de Ingeniería de AGENTRAX S.A.C.,\n\n` +
-        `Remito requerimiento formal para evaluación de factibilidad técnica:\n` +
-        `• Contacto: ${name}\n` +
+        `Estimado equipo de Agentrax Perú,\n\n` +
+        `Solicito información y demostración técnica de la plataforma:\n` +
+        `• Nombre y Cargo: ${name}\n` +
         `• Empresa: ${company}\n` +
         `• Correo Corporativo: ${email}\n` +
-        `• Sector: ${sector}\n\n` +
-        `Alcance Técnico:\n${scope}\n\n` +
-        `Atentamente,\n${name}`
+        `• Solución de Interés: ${pillar}\n\n` +
+        `Requerimiento:\n${message}\n\n` +
+        `Saludos cordiales,\n${name}`
       );
 
-      const notice = document.getElementById('console-form-feedback');
-      notice.classList.remove('hidden');
+      const feedback = document.getElementById('form-feedback');
+      feedback.classList.remove('hidden');
 
       setTimeout(() => {
         window.location.href = `mailto:comercial@agentraxperu.com?subject=${subject}&body=${body}`;
