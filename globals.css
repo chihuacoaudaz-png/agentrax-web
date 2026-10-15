@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Surface space budget (60-30-10) */
+  --surface-canvas: #08090B; /* 60% viewport base */
+  --surface-1: #0E1014;      /* 30% structural containers */
+  --surface-2: #14171D;      /* interactive consoles & elevated nodes */
+  
+  /* Brand extracted from Agentrax logo (<= 10% viewport focal budget) */
+  --brand-primary: #007AFF;   /* Electric Tech Blue */
+  --brand-secondary: #0144AD; /* Deep Tech Cobalt Blue */
+  --brand-glow: rgba(0, 122, 255, 0.15);
+
+  /* Precision hairlines - zero fuzzy shadows */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --border-active: rgba(0, 122, 255, 0.4);
+
+  /* Typography tokens */
+  --text-primary: #EDEDED;
+  --text-secondary: #9E9E9E;
+  --text-tertiary: #616161;
+  --text-muted: #424242;
+
+  /* Emil Kowalski motion physics */
+  --ease-out-kowalski: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 140ms;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Strict Typography rules */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.font-mono,
+code,
+pre,
+.metric-value,
+.telemetry-node,
+.badge-tech {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Linear-grade Bento Hairline Containers (strictly 4px-6px radius) */
+.bento-container {
+  background-color: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  transition: border-color var(--duration-fast) var(--ease-out-kowalski);
+  position: relative;
+  overflow: hidden;
+}
+
+.bento-container:hover {
+  border-color: var(--border-hover);
+}
+
+.bento-console {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+}
+
+/* Strict micro-interaction tactile feedback */
+button,
+a,
+.interactive-node {
+  transition: transform var(--duration-fast) var(--ease-out-kowalski),
+              background-color var(--duration-fast) var(--ease-out-kowalski),
+              border-color var(--duration-fast) var(--ease-out-kowalski),
+              color var(--duration-fast) var(--ease-out-kowalski);
+}
+
+button:active,
+a:active,
+.interactive-node:active {
+  transform: scale(0.98);
+}
+
+/* Scrollbar precision */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: #1e222b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2b313d;
+}
