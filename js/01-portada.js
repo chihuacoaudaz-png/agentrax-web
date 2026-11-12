@@ -2398,6 +2398,7 @@
             d.head.position.y = y;
             const pa = d.rod.geometry.attributes.position; pa.setY(0, y); pa.needsUpdate = true;
             d.dust.material.opacity = ph < 0.75 && y < 9 ? 0.3 + 0.15 * Math.sin(clock * 9) : 0;
+            d.dust.visible = d.dust.material.opacity > 0;
             d.dust.scale.setScalar(4 + 1.5 * Math.sin(clock * 3 + m.phase * 9));
             return;
           }
@@ -2649,6 +2650,7 @@
             const tk = ft - k * 0.022;
             const on = flying && tk > 0;
             s.material.opacity = on ? 0.85 * (1 - k / shot.trail.length) : 0;
+            s.visible = on;
             if (!on) return;
             along(tk, s.position);
             const ang = now * 0.018 + k * 0.9, rad = 1.2 + k * 0.12;
@@ -2672,15 +2674,18 @@
               const f = (now * 0.0022 + k / shot.flow.length) % 1;
               s.position.copy(from).lerp(head, f);
               s.material.opacity = 0.8 * fade * Math.sin(f * Math.PI);
+              s.visible = s.material.opacity > 0;
             });
-          } else shot.flow.forEach(s => { s.material.opacity = 0; });
+          } else shot.flow.forEach(s => { s.material.opacity = 0; s.visible = false; });
           if (ft >= 1 && shot.hit < 0) { shot.hit = now; kick = 1; }
           const bt = shot.hit < 0 ? 1 : (now - shot.hit) / 900;
           shot.blast.position.copy(to);
           shot.blast.scale.setScalar(6 + bt * 60);
           shot.blast.material.opacity = bt < 1 ? 0.9 * (1 - bt) : 0;
+          shot.blast.visible = bt < 1;
         }
         u.beam.material.opacity = 0;
+        u.beam.visible = false;
 
         // Operación 24/7: el reloj de mina avanza (4 segundos = 1 hora) y la luz pasa de día a noche
         const hours = (6.5 + clock * 0.25) % 24;
@@ -2689,7 +2694,8 @@
         ambient.intensity = 0.28 + 0.5 * day;
         keyLight.intensity = 0.2 + 0.9 * day;
         keyLight.position.set(Math.cos((hours - 6) / 24 * Math.PI * 2) * 200, 40 + Math.max(0, sun) * 160, 80);
-        nightLights.forEach(l => { l.m.material.opacity = (1 - day) * l.max; });
+        // Lo que tiene opacidad 0 no se dibuja (no escribe profundidad: misma imagen)
+        nightLights.forEach(l => { l.m.material.opacity = (1 - day) * l.max; l.m.visible = day < 1; });
         windows.forEach(g => g.children.forEach(c => { if (c.userData.window) c.material.opacity = 0.35 + (1 - day) * 0.55; }));
         // Luz natural: el horizonte y la luz sobre la mina cambian con la hora (amanecer, día, atardecer, noche)
         const k = SKY.findIndex((s, i) => i < SKY.length - 1 && hours >= s[0] && hours < SKY[i + 1][0]);
@@ -2700,6 +2706,7 @@
         scene.fog.color.copy(skyColor).lerp(skyTop, 0.35);
         stars.position.copy(camera.position);
         stars.material.opacity = (1 - day) * 0.7;
+        stars.visible = day < 1;
         if (onClock) onClock(hours, day, skyColor, skyTop);
 
         const waveR = !shot || shot.hit < 0 ? -1 : (now - shot.hit) / 1000 * 110;
