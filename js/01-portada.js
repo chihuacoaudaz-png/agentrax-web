@@ -2383,12 +2383,11 @@
         // Grupos con un solo valor por cuadro (charcos y conos de luz, ventanas): comparten material
         nightLights.forEach(l => { if (l.m.isMesh) uni.set(l.m, 'n' + l.max); else skip.add(l.m); });
         windows.forEach(c => uni.set(c, 'w'));
-        const ok = m => !m.transparent || (m.blending === T.AdditiveBlending && !m.depthWrite);
         const groups = new Map(), piece = new Set();
         world.traverse(o => {
           if (!(o.isMesh || o.isLine) || !o.visible || skip.has(o) || (live.has(o) && !uni.has(o))) return;
           const m = o.material, g = o.geometry;
-          if (Array.isArray(m) || !m.visible || m.isShaderMaterial || !ok(m) || g.drawRange.count !== Infinity) return;
+          if (Array.isArray(m) || !m.visible || m.isShaderMaterial || g.drawRange.count !== Infinity) return;
           if (needs(o, m).some(k => !g.attributes[k])) return;
           let a = o.parent;
           while (a !== world && a.visible && !skip.has(a) && !live.has(a)) a = a.parent;
