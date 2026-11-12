@@ -1080,7 +1080,7 @@
         part(g, new T.BoxGeometry(w, floors * fh, d), solid(0x1c2a44), 0, floors * fh / 2, 0, 0.6);
         for (let f = 0; f < floors; f++) {
           const band = new T.Mesh(new T.BoxGeometry(w + 0.08, 0.9, d + 0.08), new T.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.45 }));
-          band.position.y = f * fh + 1.7; band.userData.window = true; g.add(band);
+          band.position.y = f * fh + 1.7; g.add(band); windows.push(band);
         }
         g.position.set(x, y, z); g.rotation.y = ry || 0;
         world.add(g);
@@ -1524,7 +1524,7 @@
         shed(pv.x, pv.y, pv.z, 6, 3, 5, 0.4, 0x2a3f66);
         lineThrough([[-7, -7], [7, -7], [7, 7], [-7, 7], [-7, -7]].map(([x, z]) => new T.Vector3(pv.x + x, hTajo(pv.x + x, pv.z + z) + 1, pv.z + z)), 0xe6ecf5, 0.6, true);
         tag('POLVORÍN', pv.x, pv.y + 9, pv.z);
-        windows.push(offices(70, 1, 16, 8, 6, 4, 0), offices(84, 1, 18, 7, 7, 3, 0.2));
+        offices(70, 1, 16, 8, 6, 4, 0); offices(84, 1, 18, 7, 7, 3, 0.2);
         tag('OFICINAS', 77, 17, 17);
         for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) shed(66 + i * 10, 1, 30 + j * 8, 7, 2.5, 4, 0, 0x223558);
         tag('CAMPAMENTO', 76, 9, 38);
@@ -2053,7 +2053,7 @@
         shed(-30, hSub(-30, -6), -6, 12, 6, 9, 0);
         shed(-8, hSub(-8, -40), -40, 10, 5, 8, 0, 0x2a3f66);
         const gC = hSub(-82, -46);
-        windows.push(offices(-76, gC, -42, 8, 6, 3, 0.1));
+        offices(-76, gC, -42, 8, 6, 3, 0.1);
         [[-90, -44], [-90, -52], [-80, -54]].forEach(([x, z]) => shed(x, gC, z, 8, 3, 4, 0, 0x2a3f66));
         const main = roadPath(hSub, [[-46, -4], [-42, -20], [-20, -22], [0, -18], [24, -16], [50, -14], [90, -14], [108, -14]]);
         const toWare = roadPath(hSub, [[-8, -20], [-8, -32]]);
@@ -2328,7 +2328,119 @@
           });
           return { top, stem, pad, gem, path, beamMesh, packets, orbit, color, index: tg.index.count, phase: (i * 0.37) % 1, speed: 0.22 + (i % 4) * 0.03 };
         });
+        fuse(id);
         resize();
+      }
+
+      /* Fusión: las piezas fijas con material equivalente se dibujan en una sola orden */
+      const matKey = o => {
+        const m = o.material;
+        return [o.isMesh ? 'M' : 'L', m.type, m.color && m.color.getHex(), m.opacity, m.transparent, m.depthWrite, m.depthTest, m.side, m.blending,
+          m.vertexColors, m.fog, m.metalness, m.roughness, m.emissive && m.emissive.getHex(), m.emissiveIntensity,
+          m.dashSize, m.gapSize, m.scale, m.map && m.map.uuid, m.alphaTest, m.polygonOffset, m.wireframe, m.flatShading, o.renderOrder].join('|');
+      };
+      const needs = (o, m) => ['position'].concat(o.isMesh && !m.isMeshBasicMaterial ? ['normal'] : [], m.map ? ['uv'] : [], m.vertexColors ? ['color'] : [], m.isLineDashedMaterial ? ['lineDistance'] : []);
+      // Une las piezas ya llevadas al marco del ancla: posición, normal (con su matriz normal), uv, color y distancia de línea
+      function mergeGeo(list, c) {
+        const o0 = list[0].o, lines = !o0.isMesh, keys = needs(o0, o0.material), sz = {}, data = {}, idx = [];
+        keys.forEach(k => { sz[k] = o0.geometry.attributes[k].itemSize; data[k] = []; });
+        const v = new T.Vector3(), nm = new T.Matrix3();
+        let nv = 0;
+        list.forEach(({ o, mx }) => {
+          const g = o.geometry, A = g.attributes, n = A.position.count;
+          nm.getNormalMatrix(mx);
+          for (let i = 0; i < n; i++) {
+            v.fromBufferAttribute(A.position, i).applyMatrix4(mx).sub(c);
+            data.position.push(v.x, v.y, v.z);
+            if (sz.normal) { v.fromBufferAttribute(A.normal, i).applyMatrix3(nm).normalize(); data.normal.push(v.x, v.y, v.z); }
+            keys.slice(sz.normal ? 2 : 1).forEach(k => { for (let j = 0; j < sz[k]; j++) data[k].push(A[k].array[i * sz[k] + j]); });
+          }
+          const I = g.index ? g.index.array : null, ni = I ? I.length : n, at = j => nv + (I ? I[j] : j);
+          if (lines && !o.isLineSegments) for (let j = 0; j < ni - 1; j++) idx.push(at(j), at(j + 1));
+          else if (!lines && mx.determinant() < 0) for (let j = 0; j < ni; j += 3) idx.push(at(j), at(j + 2), at(j + 1));
+          else for (let j = 0; j < ni; j++) idx.push(at(j));
+          nv += n;
+        });
+        const g = new T.BufferGeometry();
+        keys.forEach(k => g.setAttribute(k, new T.Float32BufferAttribute(data[k], sz[k])));
+        g.setIndex(idx);
+        return g;
+      }
+      function fuse(id) {
+        world.updateMatrixWorld(true);
+        const live = new Set(), skip = new Set(), uni = new Map();
+        const add = (S, l) => l.forEach(o => { if (o) S.add(o); });
+        // Lo que se mueve o cambia después de build es ancla: sus partes fijas se unen en su propio marco
+        movers.forEach(m => {
+          add(live, [m.grp, m.loco, m.boom, m.dust].concat(m.feeds || [], m.skips || [], m.ropes || [], m.fall || [], m.cars || [], (m.trucks || []).map(t => t.grp)));
+          if (m.rig) add(live, [m.rig.crowd, m.rig.dipper, m.rig.cable]);
+          if (m.drill) add(live, [m.drill.head, m.drill.rod, m.drill.dust]);
+        });
+        world.traverse(o => add(live, [o.userData.bed, o.userData.load, o.userData.bucket]));
+        // Núcleo, disparo y balizas quedan como están
+        add(skip, [core, shot.bolt, shot.ray, shot.blast].concat(shot.trail, shot.flow));
+        nodes.forEach(n => add(skip, [n.stem, n.pad, n.gem, n.beamMesh].concat(n.packets, n.orbit)));
+        // Grupos con un solo valor por cuadro (charcos y conos de luz, ventanas): comparten material
+        nightLights.forEach(l => { if (l.m.isMesh) uni.set(l.m, 'n' + l.max); else skip.add(l.m); });
+        windows.forEach(c => uni.set(c, 'w'));
+        const ok = m => !m.transparent || (m.blending === T.AdditiveBlending && !m.depthWrite);
+        const groups = new Map(), piece = new Set();
+        world.traverse(o => {
+          if (!(o.isMesh || o.isLine) || !o.visible || skip.has(o) || (live.has(o) && !uni.has(o))) return;
+          const m = o.material, g = o.geometry;
+          if (Array.isArray(m) || !m.visible || m.isShaderMaterial || !ok(m) || g.drawRange.count !== Infinity) return;
+          if (needs(o, m).some(k => !g.attributes[k])) return;
+          let a = o.parent;
+          while (a !== world && a.visible && !skip.has(a) && !live.has(a)) a = a.parent;
+          if (!a.visible || skip.has(a)) return;
+          const mx = o.matrix.clone();
+          for (let p = o.parent; p !== a; p = p.parent) mx.premultiply(p.matrix);
+          const at = new T.Vector3().setFromMatrixPosition(mx);
+          // Transparentes: no mezclar piezas en el origen con piezas ubicadas; en sub, separar por lado del vidrio
+          const side = !m.transparent ? '' : at.lengthSq() < 1e-8 ? 'o' : id === 'sub' && a === world && at.z < 0 ? 'b' : 'f';
+          const key = a.id + '|' + (uni.get(o) || '') + '|' + side + '|' + matKey(o);
+          if (!groups.has(key)) groups.set(key, { a, side, list: [] });
+          groups.get(key).list.push({ o, mx, at });
+          piece.add(o);
+        });
+        const merged = [];
+        groups.forEach(G => {
+          if (G.list.length < 2) { piece.delete(G.list[0].o); return; }
+          G.list.sort((p, q) => p.o.id - q.o.id);
+          merged.push(G);
+        });
+        // Hijos que no se unen pasan, sin moverse, al ancestro que queda
+        merged.forEach(G => G.list.forEach(({ o }) => o.children.slice().forEach(ch => {
+          if (piece.has(ch)) return;
+          let p = o.parent;
+          while (piece.has(p)) p = p.parent;
+          p.attach(ch);
+        })));
+        const old = [], kept = new Set();
+        merged.forEach(G => {
+          // El objeto fusionado es la primera pieza (conserva su orden de creación), ubicada en el centro de las piezas
+          const c = new T.Vector3();
+          if (G.side !== 'o') { G.list.forEach(p => c.add(p.at)); c.divideScalar(G.list.length); }
+          const f = G.list[0].o, geo = mergeGeo(G.list, c);
+          G.list.forEach(({ o }) => { old.push(o.geometry, o.material); o.parent.remove(o); });
+          f.geometry = geo;
+          if (!f.isMesh) f.isLineSegments = true; // la tira se dibuja como segmentos
+          f.position.copy(c); f.rotation.set(0, 0, 0); f.scale.set(1, 1, 1);
+          G.a.add(f);
+          kept.add(f);
+        });
+        // Grupos que quedaron vacíos
+        const prune = o => {
+          o.children.slice().forEach(prune);
+          if (o !== world && o.type === 'Group' && !o.children.length && !live.has(o) && !skip.has(o)) o.parent.remove(o);
+        };
+        prune(world);
+        nightLights = nightLights.filter(l => !piece.has(l.m) || kept.has(l.m));
+        windows = windows.filter(c => !piece.has(c) || kept.has(c));
+        // Liberar lo que ya nadie usa (los materiales compartidos que siguen en uso se quedan)
+        const used = new Set();
+        world.traverse(o => { if (o.geometry) used.add(o.geometry); [].concat(o.material || []).forEach(m => used.add(m)); });
+        new Set(old).forEach(x => { if (!used.has(x)) x.dispose(); });
       }
 
       function resize() {
@@ -2696,7 +2808,7 @@
         keyLight.position.set(Math.cos((hours - 6) / 24 * Math.PI * 2) * 200, 40 + Math.max(0, sun) * 160, 80);
         // Lo que tiene opacidad 0 no se dibuja (no escribe profundidad: misma imagen)
         nightLights.forEach(l => { l.m.material.opacity = (1 - day) * l.max; l.m.visible = day < 1; });
-        windows.forEach(g => g.children.forEach(c => { if (c.userData.window) c.material.opacity = 0.35 + (1 - day) * 0.55; }));
+        windows.forEach(c => { c.material.opacity = 0.35 + (1 - day) * 0.55; });
         // Luz natural: el horizonte y la luz sobre la mina cambian con la hora (amanecer, día, atardecer, noche)
         const k = SKY.findIndex((s, i) => i < SKY.length - 1 && hours >= s[0] && hours < SKY[i + 1][0]);
         const a0 = SKY[k], a1 = SKY[k + 1], f = (hours - a0[0]) / (a1[0] - a0[0]);
