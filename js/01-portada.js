@@ -2499,6 +2499,66 @@
           m.count = j; m.visible = j > 0; m.instanceMatrix.needsUpdate = true;
         });
       }
+      /* Paso 8: sprites aditivos con vida propia (núcleo, disparo, brillos que viajan por mangas y aire) en carteles. El sprite sigue en la escena como guía, en otra capa;
+         en cada cuadro se copian su posición, escala, color y opacidad. Dos mallas, lo más lejano y lo más cercano que el origen */
+      let flock = [];
+      function flocks(air) {
+        flock = [];
+        const G = new Map();
+        air.forEach(r => r.traverse(o => {
+          const m = o.material;
+          if (!o.isSprite || m.blending !== T.AdditiveBlending || !m.map || m.alphaMap || m.rotation !== 0 || !m.sizeAttenuation || o.center.x !== 0.5 || o.center.y !== 0.5) return;
+          const key = [m.map.uuid, m.transparent, m.depthWrite, m.depthTest, m.fog, m.alphaTest, o.renderOrder].join('|');
+          if (!G.has(key)) G.set(key, []);
+          G.get(key).push(o);
+        }));
+        G.forEach(L => {
+          if (L.length < 2) return;
+          L.sort((p, q) => p.id - q.id);
+          const n = L.length, idx = [], uv = [];
+          for (let k = 0; k < n; k++) { idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3); uv.push(0, 0, 1, 0, 1, 1, 0, 1); }
+          const P = [0, 1].map(() => {
+            const g = new T.BufferGeometry(), at = (k, a, s) => g.setAttribute(k, new T.Float32BufferAttribute(a || new Float32Array(n * 4 * s), s).setUsage(T.DynamicDrawUsage));
+            g.setAttribute('position', new T.Float32BufferAttribute([].concat(...L.map(() => [-0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0])), 3));
+            g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2));
+            at('ctr', null, 3); at('scl', null, 2); at('rgba', null, 4); g.setIndex(idx);
+            const m = new T.Mesh(g, cardMat(L[0].material));
+            m.frustumCulled = false; m.renderOrder = L[0].renderOrder; world.add(m);
+            return m;
+          });
+          L.forEach(o => o.layers.set(1));
+          flock.push({ L, P });
+        });
+      }
+      const fP = new T.Vector3();
+      function flight() {
+        const d0 = -camera.position.dot(bD);
+        flock.forEach(({ L, P }) => {
+          const n = [0, 0];
+          bC[0].set(0, 0, 0); bC[1].set(0, 0, 0);
+          L.forEach(o => {
+            o.userData.h = -1;
+            if (!o.material.visible) return;
+            for (let p = o; p !== world; p = p.parent) if (!p.visible) return;
+            o.updateWorldMatrix(true, false);
+            fP.setFromMatrixPosition(o.matrixWorld);
+            const h = o.userData.h = tmpV.copy(fP).sub(camera.position).dot(bD) > d0 ? 0 : 1;
+            bC[h].add(fP); n[h]++;
+          });
+          P.forEach((m, h) => { m.visible = n[h] > 0; if (n[h]) m.position.copy(bC[h]).divideScalar(n[h]); m.geometry.setDrawRange(0, n[h] * 6); m.userData.j = 0; });
+          L.forEach(o => {
+            const h = o.userData.h;
+            if (h < 0) return;
+            const m = P[h], A = m.geometry.attributes, j = m.userData.j++, e = o.matrixWorld.elements, c = o.material.color, op = o.material.opacity;
+            const sx = Math.hypot(e[0], e[1], e[2]), sy = Math.hypot(e[4], e[5], e[6]);
+            for (let v = j * 4; v < j * 4 + 4; v++) {
+              A.ctr.setXYZ(v, e[12] - m.position.x, e[13] - m.position.y, e[14] - m.position.z);
+              A.scl.setXY(v, sx, sy); A.rgba.setXYZW(v, c.r, c.g, c.b, op);
+            }
+          });
+          P.forEach(m => { const A = m.geometry.attributes; A.ctr.needsUpdate = A.scl.needsUpdate = A.rgba.needsUpdate = true; });
+        });
+      }
       const TINT = new Set(['MeshBasicMaterial', 'MeshStandardMaterial', 'MeshLambertMaterial', 'MeshPhongMaterial', 'LineBasicMaterial', 'LineDashedMaterial']);
       // Las transparentes ubicadas en world no: al unirlas cambia su centro y su orden frente al relieve al girar.
       // Dentro de un equipo sí: sus piezas están a pocos metros unas de otras
@@ -2601,6 +2661,7 @@
         cards(id, live, skip, old);
         beacons(old);
         herd(skip);
+        flocks(new Set([core, shot.bolt, shot.blast].concat(shot.trail, shot.flow, movers.filter(m => m.grp && m.grp.isSprite).map(m => m.grp))));
         // Grupos que quedaron vacíos
         const prune = o => {
           o.children.slice().forEach(prune);
@@ -3007,7 +3068,7 @@
           mt.uniforms.uDay.value = day;
         });
 
-        sync();
+        sync(); flight();
         renderer.render(scene, camera);
         nodes.forEach((n, i) => place(spotEls[i], n.top));
         place(hub, labelAt.copy(core.position).add(labelDrop));
