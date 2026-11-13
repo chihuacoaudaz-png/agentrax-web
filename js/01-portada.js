@@ -2465,6 +2465,40 @@
         });
         P.forEach(m => { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; });
       }
+      /* Paso 9: piezas opacas iguales (equipos, mineral en movimiento) como instancias. La pieza original sigue en la
+         escena como guía: se mueve igual que antes, pero en otra capa, así que no se dibuja */
+      let herds = [];
+      function herd(skip) {
+        herds = [];
+        const G = new Map(), same = (a, b) => !a === !b && (!a || (a.array.length === b.array.length && a.array.every((x, i) => x === b.array[i])));
+        world.traverse(o => {
+          const m = o.material, g = o.geometry;
+          if (!o.isMesh || o.isInstancedMesh || Array.isArray(m) || m.transparent || m.isShaderMaterial || !m.visible || g.drawRange.count !== Infinity || g.groups.length) return;
+          for (let p = o; p !== world; p = p.parent) if (skip.has(p)) return;
+          const k = [matKey(o), Object.keys(g.attributes).join(), g.attributes.position.count, g.index ? g.index.count : 0].join('|');
+          if (!G.has(k)) G.set(k, []);
+          const L = G.get(k), h = L.find(h => ['position', 'normal', 'uv'].every(a => same(g.attributes[a], h[0].geometry.attributes[a])) && same(g.index, h[0].geometry.index));
+          if (h) h.push(o); else L.push([o]);
+        });
+        G.forEach(L => L.forEach(list => {
+          if (list.length < 2) return;
+          const m = new T.InstancedMesh(list[0].geometry, list[0].material, list.length);
+          m.frustumCulled = false; world.add(m);
+          list.forEach(o => o.layers.set(1));
+          herds.push({ m, list });
+        }));
+      }
+      function sync() {
+        herds.forEach(({ m, list }) => {
+          let j = 0;
+          list.forEach(o => {
+            for (let p = o; p !== world; p = p.parent) if (!p.visible) return;
+            o.updateWorldMatrix(true, false);
+            m.setMatrixAt(j++, o.matrixWorld);
+          });
+          m.count = j; m.visible = j > 0; m.instanceMatrix.needsUpdate = true;
+        });
+      }
       const TINT = new Set(['MeshBasicMaterial', 'MeshStandardMaterial', 'MeshLambertMaterial', 'MeshPhongMaterial', 'LineBasicMaterial', 'LineDashedMaterial']);
       // Las transparentes ubicadas no: al unirlas cambia su centro y su orden frente al relieve al girar
       const TSIDE = ['', 'o'];
@@ -2565,6 +2599,7 @@
         });
         cards(id, live, skip, old);
         beacons(old);
+        herd(skip);
         // Grupos que quedaron vacíos
         const prune = o => {
           o.children.slice().forEach(prune);
@@ -2971,6 +3006,7 @@
           mt.uniforms.uDay.value = day;
         });
 
+        sync();
         renderer.render(scene, camera);
         nodes.forEach((n, i) => place(spotEls[i], n.top));
         place(hub, labelAt.copy(core.position).add(labelDrop));
