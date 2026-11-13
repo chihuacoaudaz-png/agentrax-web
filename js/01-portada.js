@@ -2370,6 +2370,60 @@
         g.setIndex(idx);
         return g;
       }
+      /* Paso 6: sprites fijos en una sola malla de carteles; el shader repite el de SpriteMaterial (r128) */
+      const cardVS = ['attribute vec3 ctr; attribute vec2 scl; attribute vec4 rgba; uniform float rotation; varying vec2 vUv; varying vec4 vC;',
+        '#include <common>', '#include <fog_pars_vertex>',
+        'void main() {', '  vUv = uv; vC = rgba;', '  vec4 mvPosition = modelViewMatrix * vec4( ctr, 1.0 );',
+        '  vec2 alignedPosition = position.xy * scl;', '  vec2 rotatedPosition;',
+        '  rotatedPosition.x = cos( rotation ) * alignedPosition.x - sin( rotation ) * alignedPosition.y;',
+        '  rotatedPosition.y = sin( rotation ) * alignedPosition.x + cos( rotation ) * alignedPosition.y;',
+        '  mvPosition.xy += rotatedPosition;', '  gl_Position = projectionMatrix * mvPosition;', '#include <fog_vertex>', '}'].join('\n');
+      const cardFS = ['uniform sampler2D map; varying vec2 vUv; varying vec4 vC;', '#include <common>', '#include <fog_pars_fragment>',
+        'void main() {', '  vec4 diffuseColor = vC;', '  diffuseColor *= texture2D( map, vUv );',
+        '  gl_FragColor = vec4( diffuseColor.rgb, diffuseColor.a );', '#include <fog_fragment>', '}'].join('\n');
+      function cardMat(m) {
+        const uniforms = T.UniformsUtils.merge([T.UniformsLib.fog, { rotation: { value: 0 } }]);
+        uniforms.map = { value: m.map };
+        return new T.ShaderMaterial({ uniforms, vertexShader: cardVS, fragmentShader: cardFS, fog: m.fog, transparent: m.transparent,
+          blending: m.blending, depthWrite: m.depthWrite, depthTest: m.depthTest });
+      }
+      // Une los sprites fijos que cuelgan de world (lado del vidrio en sub); quedan ubicados en su centro
+      function cards(id, live, skip, old) {
+        const groups = new Map();
+        world.children.slice().forEach(o => {
+          const m = o.material;
+          if (!o.isSprite || !o.visible || live.has(o) || skip.has(o) || o.children.length || !m.visible || !m.map || m.alphaMap
+            || m.rotation !== 0 || !m.sizeAttenuation || o.center.x !== 0.5 || o.center.y !== 0.5) return;
+          const side = id === 'sub' && o.position.z < 0 ? 'b' : 'f';
+          const key = [side, m.map.uuid, m.transparent, m.blending, m.depthWrite, m.depthTest, m.fog, m.alphaTest, o.renderOrder].join('|');
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(o);
+        });
+        const Q = [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]];
+        groups.forEach(L => {
+          if (L.length < 2) return;
+          L.sort((p, q) => p.id - q.id);
+          const c = new T.Vector3();
+          L.forEach(o => c.add(o.position)); c.divideScalar(L.length);
+          const pos = [], uv = [], ctr = [], scl = [], rgba = [], idx = [];
+          L.forEach((o, k) => {
+            const e = o.matrixWorld.elements, sx = Math.hypot(e[0], e[1], e[2]), sy = Math.hypot(e[4], e[5], e[6]), m = o.material;
+            Q.forEach(([x, y]) => {
+              pos.push(x, y, 0); uv.push(x + 0.5, y + 0.5); ctr.push(e[12] - c.x, e[13] - c.y, e[14] - c.z); scl.push(sx, sy);
+              rgba.push(m.color.r, m.color.g, m.color.b, m.opacity);
+            });
+            idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3);
+            old.push(o.material); world.remove(o);
+          });
+          const g = new T.BufferGeometry();
+          g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2));
+          g.setAttribute('ctr', new T.Float32BufferAttribute(ctr, 3)); g.setAttribute('scl', new T.Float32BufferAttribute(scl, 2));
+          g.setAttribute('rgba', new T.Float32BufferAttribute(rgba, 4)); g.setIndex(idx);
+          const f = new T.Mesh(g, cardMat(L[0].material));
+          f.position.copy(c); f.frustumCulled = false; f.renderOrder = L[0].renderOrder;
+          world.add(f);
+        });
+      }
       const TINT = new Set(['MeshBasicMaterial', 'MeshStandardMaterial', 'MeshLambertMaterial', 'MeshPhongMaterial', 'LineBasicMaterial', 'LineDashedMaterial']);
       // Las transparentes ubicadas no: al unirlas cambia su centro y su orden frente al relieve al girar
       const TSIDE = ['', 'o'];
@@ -2468,6 +2522,7 @@
           G.a.add(f);
           kept.add(f);
         });
+        cards(id, live, skip, old);
         // Grupos que quedaron vacíos
         const prune = o => {
           o.children.slice().forEach(prune);
