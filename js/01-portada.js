@@ -1176,7 +1176,9 @@
         g.font = '600 44px "Barlow Semi Condensed", sans-serif';
         g.fillStyle = 'rgba(2, 8, 18, 0.72)'; g.fillRect(0, 6, c.width, 52);
         g.fillStyle = '#9fb0c8'; g.fillText(text, 20, 47);
-        const s = new T.Sprite(new T.SpriteMaterial({ map: new T.CanvasTexture(c), transparent: true, depthWrite: false }));
+        const tx = new T.CanvasTexture(c);
+        ownTex.push(tx);
+        const s = new T.Sprite(new T.SpriteMaterial({ map: tx, transparent: true, depthWrite: false }));
         s.scale.set(c.width / 64 * 3, 3, 1);
         s.position.set(x, y, z);
         s.userData.tag = true; s.visible = false;
@@ -2265,7 +2267,7 @@
       /* Construcción por partes: corre tras el primer pintado y cede el control al navegador entre partes.
          Mientras construye no se dibuja (el lienzo conserva su último cuadro); si llega otra mina, la construcción
          a medias se abandona y la nueva empieza liberando lo que alcanzó a armar */
-      let job = 0, building = false, firstBuild = true;
+      let job = 0, building = false, firstBuild = true, ownTex = [];
       const tick = (() => { const ch = new MessageChannel(), q = []; ch.port1.onmessage = () => q.shift()(); return f => { q.push(f); ch.port2.postMessage(0); }; })();
       function build(id, done) {
         const my = ++job, it = steps(id);
@@ -2286,6 +2288,8 @@
       }
       function* steps(id) {
         if (world) { scene.remove(world); world.traverse(o => { if (o.geometry) o.geometry.dispose(); [].concat(o.material || []).forEach(m => m.dispose()); if (o.isInstancedMesh) o.dispose(); }); }
+        // Texturas propias de cada mina (etiquetas y haz del disparo): se liberan con ella
+        ownTex.forEach(t => t.dispose()); ownTex = [];
         world = new T.Group();
         scene.add(world);
         movers = []; flashes = []; terrainMats = []; nightLights = []; windows = [];
@@ -2360,7 +2364,9 @@
           const g = c.getContext("2d"), lg = g.createLinearGradient(0, 0, 0, 128);
           lg.addColorStop(0, "rgba(255,255,255,1)"); lg.addColorStop(0.7, "rgba(160,220,255,0.6)"); lg.addColorStop(1, "rgba(120,200,255,0.05)");
           g.fillStyle = lg; g.fillRect(0, 0, 4, 128);
-          return new T.CanvasTexture(c);
+          const tx = new T.CanvasTexture(c);
+          ownTex.push(tx);
+          return tx;
         })();
         const beamMat = (color, op) => new T.MeshBasicMaterial({ map: beamTex, color, transparent: true, opacity: op, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide });
         const ray = new T.Group();
