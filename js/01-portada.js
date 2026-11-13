@@ -2213,7 +2213,7 @@
       }
 
       function build(id) {
-        if (world) { scene.remove(world); world.traverse(o => { if (o.geometry) o.geometry.dispose(); [].concat(o.material || []).forEach(m => m.dispose()); }); }
+        if (world) { scene.remove(world); world.traverse(o => { if (o.geometry) o.geometry.dispose(); [].concat(o.material || []).forEach(m => m.dispose()); if (o.isInstancedMesh) o.dispose(); }); }
         world = new T.Group();
         scene.add(world);
         movers = []; flashes = []; terrainMats = []; nightLights = []; windows = [];
@@ -2424,6 +2424,47 @@
           world.add(f);
         });
       }
+      /* Paso 7: balizas. Los stem se unen con color por vértice; pad, gem, paquetes y órbitas son instancias.
+         Cada clase va en dos mallas, las piezas más lejanas y las más cercanas que el origen (donde están relieve,
+         vidrio y túneles), ubicadas en el centro de sus piezas: así se ordenan igual que las piezas sueltas frente a ellos */
+      let bk = null;
+      function beacons(old) {
+        const s0 = nodes[0].stem, geo = mergeGeo(nodes.map(n => ({ o: n.stem, mx: n.stem.matrixWorld.clone() })), new T.Vector3(), true);
+        nodes.forEach(n => { old.push(n.stem.geometry, n.stem.material); if (n.stem !== s0) world.remove(n.stem); });
+        s0.geometry = geo; s0.isLineSegments = true;
+        s0.material = s0.material.clone(); s0.material.color.setRGB(1, 1, 1); s0.material.opacity = 1; s0.material.vertexColors = true;
+        const pair = (list, tint) => {
+          const o = list[0];
+          list.forEach(x => { old.push(x.material); if (x.geometry !== o.geometry) old.push(x.geometry); world.remove(x); });
+          return [0, 1].map(() => {
+            const m = new T.InstancedMesh(o.geometry, o.material.clone(), list.length);
+            if (tint) { m.material.color.setRGB(1, 1, 1); for (let j = 0; j < list.length; j++) m.setColorAt(j, GREY); }
+            m.frustumCulled = false; world.add(m); return m;
+          });
+        };
+        const item = (p, q, c) => ({ p: p ? p.clone() : new T.Vector3(), q: q ? q.clone() : new T.Quaternion(), s: new T.Vector3(1, 1, 1), c: c ? c.clone() : null, on: true, h: 0 });
+        bk = { stem: s0,
+          pad: pair(nodes.map(n => n.pad), true), gem: pair(nodes.map(n => n.gem), true),
+          pk: pair([].concat(...nodes.map(n => n.packets))), orb: pair([].concat(...nodes.map(n => n.orbit)), true),
+          pads: nodes.map(n => item(n.pad.position, n.pad.quaternion, GREY)), gems: nodes.map(() => item(null, null, GREY)),
+          pks: [].concat(...nodes.map(n => n.packets.map(() => item()))), orbs: [].concat(...nodes.map(n => n.orbit.map(m => item(null, null, m.material.color)))) };
+        nodes.forEach(n => { n.c = null; n.last = [0, 0, 0]; });
+      }
+      const bM = new T.Matrix4(), bE = new T.Euler(), bD = new T.Vector3(), bC = [new T.Vector3(), new T.Vector3()];
+      // Reparte las piezas encendidas entre la malla lejana y la cercana
+      function lay(P, items) {
+        const n = [0, 0], d0 = -camera.position.dot(bD);
+        bC[0].set(0, 0, 0); bC[1].set(0, 0, 0);
+        items.forEach(it => { if (!it.on) return; it.h = tmpV.copy(it.p).sub(camera.position).dot(bD) > d0 ? 0 : 1; bC[it.h].add(it.p); n[it.h]++; });
+        P.forEach((m, h) => { m.count = 0; m.visible = n[h] > 0; if (n[h]) m.position.copy(bC[h]).divideScalar(n[h]); });
+        items.forEach(it => {
+          if (!it.on) return;
+          const m = P[it.h], j = m.count++;
+          m.setMatrixAt(j, bM.compose(tmpV.copy(it.p).sub(m.position), it.q, it.s));
+          if (m.instanceColor) m.setColorAt(j, it.c);
+        });
+        P.forEach(m => { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; });
+      }
       const TINT = new Set(['MeshBasicMaterial', 'MeshStandardMaterial', 'MeshLambertMaterial', 'MeshPhongMaterial', 'LineBasicMaterial', 'LineDashedMaterial']);
       // Las transparentes ubicadas no: al unirlas cambia su centro y su orden frente al relieve al girar
       const TSIDE = ['', 'o'];
@@ -2523,6 +2564,7 @@
           kept.add(f);
         });
         cards(id, live, skip, old);
+        beacons(old);
         // Grupos que quedaron vacíos
         const prune = o => {
           o.children.slice().forEach(prune);
@@ -2774,25 +2816,32 @@
           n.beamMesh.visible = r > 0;
           n.beamMesh.geometry.setDrawRange(0, Math.floor(n.index * r / 6) * 6);
           const c = r > 0 ? n.color : GREY;
-          n.gem.material.color.copy(c); n.stem.material.color.copy(c); n.pad.material.color.copy(c);
-          n.gem.rotation.y = clock * 1.4 + i;
-          n.gem.scale.setScalar(done ? 1.25 + 0.15 * Math.sin(clock * 4 + i) : 1);
-          n.packets.forEach((m, k) => {
-            m.visible = done;
-            if (!done) return;
+          if (n.c !== c) {
+            n.c = c; bk.pads[i].c.copy(c); bk.gems[i].c.copy(c);
+            const a = bk.stem.geometry.attributes.color;
+            a.setXYZ(i * 2, c.r, c.g, c.b); a.setXYZ(i * 2 + 1, c.r, c.g, c.b); a.needsUpdate = true;
+          }
+          const g = bk.gems[i];
+          g.p.copy(n.top); g.q.setFromEuler(bE.set(0, clock * 1.4 + i, 0)); g.s.setScalar(done ? 1.25 + 0.15 * Math.sin(clock * 4 + i) : 1);
+          for (let k = 0; k < 3; k++) {
+            const m = bk.pks[i * 3 + k];
+            m.on = done;
+            if (!done) continue;
             const t = (clock * n.speed + n.phase + k / 3) % 1;
-            if (t < m.userData.last) flash();
-            m.userData.last = t;
-            m.position.copy(n.path.getPointAt(t));
+            if (t < n.last[k]) flash();
+            n.last[k] = t;
+            m.p.copy(n.path.getPointAt(t));
             n.path.getTangentAt(t, tan);
-            m.quaternion.setFromUnitVectors(UP, tan.normalize());
-          });
-          n.orbit.forEach((m, k) => {
-            m.visible = r <= 0;
-            const ang = clock * (1.1 + k * 0.4) + n.phase * 6 + k * 2.1, rad = 4 + k * 2.2;
-            m.position.set(n.top.x + Math.cos(ang) * rad, n.top.y - 3 + Math.sin(ang * 1.3) * 1.5, n.top.z + Math.sin(ang) * rad);
-          });
+            m.q.setFromUnitVectors(UP, tan.normalize());
+          }
+          for (let k = 0; k < 3; k++) {
+            const m = bk.orbs[i * 3 + k], ang = clock * (1.1 + k * 0.4) + n.phase * 6 + k * 2.1, rad = 4 + k * 2.2;
+            m.on = r <= 0;
+            m.p.set(n.top.x + Math.cos(ang) * rad, n.top.y - 3 + Math.sin(ang * 1.3) * 1.5, n.top.z + Math.sin(ang) * rad);
+          }
         });
+        bD.copy(cfg.target).sub(camera.position).normalize();
+        lay(bk.pad, bk.pads); lay(bk.gem, bk.gems); lay(bk.pk, bk.pks); lay(bk.orb, bk.orbs);
 
         litAmount += ((lit ? 1 : 0) - litAmount) * 0.06;
         if (lit && !wasLit) waveStart = now;
