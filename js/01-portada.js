@@ -2500,7 +2500,8 @@
         });
       }
       const TINT = new Set(['MeshBasicMaterial', 'MeshStandardMaterial', 'MeshLambertMaterial', 'MeshPhongMaterial', 'LineBasicMaterial', 'LineDashedMaterial']);
-      // Las transparentes ubicadas no: al unirlas cambia su centro y su orden frente al relieve al girar
+      // Las transparentes ubicadas en world no: al unirlas cambia su centro y su orden frente al relieve al girar.
+      // Dentro de un equipo sí: sus piezas están a pocos metros unas de otras
       const TSIDE = ['', 'o'];
       function fuse(id) {
         world.updateMatrixWorld(true);
@@ -2534,7 +2535,7 @@
           // Transparentes: no mezclar piezas en el origen con piezas ubicadas; en sub, separar por lado del vidrio
           const side = !m.transparent ? '' : at.lengthSq() < 1e-8 ? 'o' : id === 'sub' && a === world && at.z < 0 ? 'b' : 'f';
           // Paso 5: piezas que solo difieren en color u opacidad van juntas, con color RGBA por vértice
-          const tint = !uni.has(o) && !m.vertexColors && TINT.has(m.type) && TSIDE.includes(side);
+          const tint = !uni.has(o) && !m.vertexColors && TINT.has(m.type) && (TSIDE.includes(side) || a !== world);
           const pre = a.id + '|' + (uni.get(o) || '') + '|' + side + '|', key = pre + matKey(o);
           if (!groups.has(key)) groups.set(key, { a, side, tk: tint ? pre + matKey(o, true) : null, list: [] });
           groups.get(key).list.push({ o, mx, at });
