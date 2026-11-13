@@ -5,89 +5,159 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Términos y Condiciones | Agentrax Perú</title>
   <meta name="description" content="Términos y Condiciones de Uso y Servicio de Agentrax Perú (agentraxperu.com).">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230f172a'/><path d='M8 22L16 6L24 22H19L16 16L13 22H8Z' fill='%236366f1'/><circle cx='16' cy='12' r='2.5' fill='%2338bdf8'/></svg>" type="image/svg+xml">
+  <meta name="theme-color" content="#020812">
+  <link rel="icon" href="/brand-app-icon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            display: ['"Space Grotesk"', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/legal.css">
 </head>
-<body class="bg-slate-950 text-slate-200 font-sans antialiased min-h-screen flex flex-col justify-between">
-  
-  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md">
-    <div class="max-w-4xl mx-auto px-4 py-5 flex items-center justify-between">
-      <a href="index.html" class="flex items-center space-x-3">
-        <span class="font-display font-bold text-xl tracking-tight text-white">AGENTRAX PERÚ</span>
-      </a>
-      <a href="index.html" class="text-xs font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1.5">
-        ← Volver al Inicio
-      </a>
+<body>
+
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+
+  <!-- ================= Barra ================= -->
+  <header class="bar">
+    <div class="wrap">
+      <a href="/" class="bar__logo" aria-label="AgentraX, inicio"><img class="wordmark-dark" src="/brand-logo-dark.png" alt="AgentraX" width="148" height="48" fetchpriority="high"></a>
+      <nav class="bar__nav" aria-label="Secciones">
+        <a href="/#nosotros"><span>Nosotros</span></a>
+        <a href="/#productos"><span>Productos</span></a>
+        <a href="/#proyectos"><span>Portafolio de proyectos</span></a>
+        <a href="/#industrias"><span>Mercados</span></a>
+        <a href="/#novedades"><span>Notas de prensa</span></a>
+        <a href="/#contacto"><span>Contacto</span></a>
+      </nav>
+      <a href="/#contacto" class="btn btn--flow btn--sm">Solicitar Demo B2B</a>
+      <button class="bar__menu" type="button" aria-expanded="false" aria-controls="drop">Menú</button>
+      <div class="bar__drop" id="drop">
+        <a href="/#nosotros">Nosotros</a>
+        <a href="/#productos">Productos</a>
+        <a href="/#proyectos">Portafolio de proyectos</a>
+        <a href="/#industrias">Mercados</a>
+        <a href="/#novedades">Notas de prensa</a>
+        <a href="/#contacto">Contacto</a>
+        <a href="/#contacto" class="btn btn--flow">Solicitar Demo B2B</a>
+      </div>
     </div>
   </header>
+  <div class="strip" role="presentation">
+    <div class="wrap">
+      <span class="strip__id">MULTI-AGENT INTELLIGENCE FOR REAL INDUSTRY</span>
+      <span class="strip__live"><i></i>Lima, Perú <span class="strip__clock num" id="clock"></span></span>
+      <a class="strip__mail" href="mailto:comercial@agentraxperu.com">comercial@agentraxperu.com</a>
+    </div>
+  </div>
 
-  <main class="max-w-4xl mx-auto px-4 py-12 flex-grow">
-    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 sm:p-12 space-y-6 text-sm text-slate-300 leading-relaxed shadow-xl">
-      <div class="border-b border-slate-800 pb-4">
-        <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Legal & Contratación</span>
-        <h1 class="text-3xl font-display font-bold text-white mt-1">Términos y Condiciones de Servicio</h1>
-        <p class="text-xs text-slate-400 mt-2">Vigente para el portal agentraxperu.com • Última actualización: Enero 2026</p>
-      </div>
-
-      <section class="space-y-3">
-        <h2 class="text-lg font-bold text-white">1. Aceptación de los Términos</h2>
-        <p>Al acceder, navegar o utilizar este sitio web (<strong>agentraxperu.com</strong>) y cualquiera de los servicios tecnológicos o canales de contacto provistos por <strong>Agentrax Perú</strong>, usted acepta quedar vinculado por los presentes Términos y Condiciones de Servicio en su totalidad.</p>
-      </section>
-
-      <section class="space-y-3">
-        <h2 class="text-lg font-bold text-white">2. Servicios y Soluciones Corporativas</h2>
-        <p>Agentrax Perú diseña e implementa agentes autónomos basados en Inteligencia Artificial, automatización robótica de procesos (RPA), infraestructura en la nube y modelos de analítica avanzada. La contratación de servicios específicos se rige por acuerdos comerciales y Acuerdos de Nivel de Servicio (SLA) suscritos formalmente entre las partes.</p>
-      </section>
-
-      <section class="space-y-3">
-        <h2 class="text-lg font-bold text-white">3. Propiedad Intelectual e Industrial</h2>
-        <p>Todas las marcas, logotipos, arquitecturas tecnológicas, diagramas, textos y códigos fuentes disponibles en este sitio son propiedad de Agentrax Perú o cuentan con las autorizaciones pertinentes. Queda estrictamente prohibida su copia, distribución o ingeniería inversa sin consentimiento previo y por escrito.</p>
-      </section>
-
-      <section class="space-y-3">
-        <h2 class="text-lg font-bold text-white">4. Uso Adecuado y Ética de Inteligencia Artificial</h2>
-        <p>El usuario y cliente se comprometen a utilizar los sistemas y APIs de Agentrax en conformidad con las leyes vigentes y las mejores prácticas éticas en IA, absteniéndose de utilizar las herramientas para actividades ilícitas, generación de desinformación, vulneración de derechos de autor o violación de medidas de ciberseguridad.</p>
-      </section>
-
-      <section class="space-y-3">
-        <h2 class="text-lg font-bold text-white">5. Disponibilidad y Garantías</h2>
-        <p>Agentrax Perú despliega sus soluciones utilizando infraestructura en la nube de alta confiabilidad orientada a una disponibilidad del 99.9%. Las métricas específicas y contingencias operativas se detallan en el contrato particular de cada cliente empresarial.</p>
-      </section>
-
-      <section class="space-y-3">
-        <h2 class="text-lg font-bold text-white">6. Legislación y Solución de Controversias</h2>
-        <p>Los presentes términos se interpretarán con arreglo a las leyes de la República del Perú. Para cualquier litigio o divergencia derivada de la interpretación de este acuerdo, las partes se someten expresamente a la jurisdicción de los jueces y tribunales de la ciudad de Lima, Perú.</p>
-      </section>
-
-      <section class="space-y-3">
-        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-slate-200">
-          <strong>Contacto Corporativo:</strong><br>
-          Agentrax Perú • Lima, Perú<br>
-          Correo: <a href="mailto:comercial@agentraxperu.com" class="text-sky-400 hover:underline">comercial@agentraxperu.com</a>
+  <main id="contenido" class="legal">
+    <div class="wrap">
+      <article class="legal__card">
+        <div class="legal__head">
+          <span class="legal__kicker">Legal &amp; Contratación</span>
+          <h1>Términos y Condiciones de Servicio</h1>
+          <p class="legal__meta">Vigente para el portal agentraxperu.com • Última actualización: Enero 2026</p>
         </div>
-      </section>
+
+        <section class="legal__sec">
+          <h2>1. Aceptación de los Términos</h2>
+          <p>Al acceder, navegar o utilizar este sitio web (<strong>agentraxperu.com</strong>) y cualquiera de los servicios tecnológicos o canales de contacto provistos por <strong>Agentrax Perú</strong>, usted acepta quedar vinculado por los presentes Términos y Condiciones de Servicio en su totalidad.</p>
+        </section>
+
+        <section class="legal__sec">
+          <h2>2. Servicios y Soluciones Corporativas</h2>
+          <p>Agentrax Perú diseña e implementa agentes autónomos basados en Inteligencia Artificial, automatización robótica de procesos (RPA), infraestructura en la nube y modelos de analítica avanzada. La contratación de servicios específicos se rige por acuerdos comerciales y Acuerdos de Nivel de Servicio (SLA) suscritos formalmente entre las partes.</p>
+        </section>
+
+        <section class="legal__sec">
+          <h2>3. Propiedad Intelectual e Industrial</h2>
+          <p>Todas las marcas, logotipos, arquitecturas tecnológicas, diagramas, textos y códigos fuentes disponibles en este sitio son propiedad de Agentrax Perú o cuentan con las autorizaciones pertinentes. Queda estrictamente prohibida su copia, distribución o ingeniería inversa sin consentimiento previo y por escrito.</p>
+        </section>
+
+        <section class="legal__sec">
+          <h2>4. Uso Adecuado y Ética de Inteligencia Artificial</h2>
+          <p>El usuario y cliente se comprometen a utilizar los sistemas y APIs de Agentrax en conformidad con las leyes vigentes y las mejores prácticas éticas en IA, absteniéndose de utilizar las herramientas para actividades ilícitas, generación de desinformación, vulneración de derechos de autor o violación de medidas de ciberseguridad.</p>
+        </section>
+
+        <section class="legal__sec">
+          <h2>5. Disponibilidad y Garantías</h2>
+          <p>Agentrax Perú despliega sus soluciones utilizando infraestructura en la nube de alta confiabilidad orientada a una disponibilidad del 99.9%. Las métricas específicas y contingencias operativas se detallan en el contrato particular de cada cliente empresarial.</p>
+        </section>
+
+        <section class="legal__sec">
+          <h2>6. Legislación y Solución de Controversias</h2>
+          <p>Los presentes términos se interpretarán con arreglo a las leyes de la República del Perú. Para cualquier litigio o divergencia derivada de la interpretación de este acuerdo, las partes se someten expresamente a la jurisdicción de los jueces y tribunales de la ciudad de Lima, Perú.</p>
+        </section>
+
+        <section class="legal__sec">
+          <div class="legal__box">
+            <strong>Contacto Corporativo:</strong><br>
+            Agentrax Perú • Lima, Perú<br>
+            Correo: <a href="mailto:comercial@agentraxperu.com">comercial@agentraxperu.com</a>
+          </div>
+        </section>
+      </article>
     </div>
   </main>
 
-  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-400">
-    © 2026 Agentrax Perú. Todos los derechos reservados. | Dominio: agentraxperu.com
+  <!-- ================= Pie ================= -->
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot__grid">
+        <div>
+          <img src="/brand-logo-dark.png" alt="AgentraX Perú" class="foot__logo wordmark-dark" width="135" height="44" loading="lazy">
+          <p><strong>AGENTRAX S.A.C.</strong> — Startup de desarrollo de Inteligencia Artificial aplicada a operaciones industriales reales, automatización de procesos y gestión documental inteligente en Perú y Latinoamérica.</p>
+          <div class="foot__mail">Canal comercial: <a href="mailto:comercial@agentraxperu.com">comercial@agentraxperu.com</a></div>
+        </div>
+        <div>
+          <h4>Industrias</h4>
+          <ul>
+            <li><a href="/#industrias">Minería &amp; Metalurgia</a></li>
+            <li><a href="/#industrias">Medio Ambiente &amp; Recursos</a></li>
+            <li><a href="/#industrias">Plantas Industriales</a></li>
+            <li><a href="/#industrias">Mecánica &amp; Maquinaria</a></li>
+            <li><a href="/#industrias">Ingeniería Civil</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Compliance &amp; Legal</h4>
+          <ul>
+            <li><a href="/privacy.html">Política de Privacidad (Ley N° 29733)</a></li>
+            <li><a href="/terms.html">Términos del Servicio</a></li>
+            <li class="foot__mail">Sede: Lima, República del Perú</li>
+          </ul>
+        </div>
+      </div>
+      <div class="foot__base">
+        <div>© 2026 AGENTRAX S.A.C. Todos los derechos reservados.</div>
+        <div>DOMINIO: <strong>agentraxperu.com</strong> • EMAIL: <strong>comercial@agentraxperu.com</strong> • <span class="foot__tls">[TLS_1.3_ENFORCED]</span></div>
+      </div>
+    </div>
   </footer>
 
+  <script>
+    (() => {
+      const clock = document.getElementById('clock');
+      if (clock) {
+        const fmt = new Intl.DateTimeFormat('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Lima' });
+        const tick = () => { clock.textContent = fmt.format(new Date()); };
+        tick(); setInterval(tick, 15000);
+      }
+      const menuBtn = document.querySelector('.bar__menu');
+      const drop = document.getElementById('drop');
+      if (menuBtn && drop) {
+        menuBtn.addEventListener('click', () => {
+          const open = menuBtn.getAttribute('aria-expanded') !== 'true';
+          menuBtn.setAttribute('aria-expanded', String(open));
+          drop.dataset.open = String(open);
+        });
+        drop.addEventListener('click', e => {
+          if (e.target.closest('a')) {
+            menuBtn.setAttribute('aria-expanded', 'false');
+            drop.dataset.open = 'false';
+          }
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
