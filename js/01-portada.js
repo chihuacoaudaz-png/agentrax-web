@@ -477,7 +477,7 @@
       const mine = MINES[mineId];
       if (S3) {
         mine.spots.forEach((s, i) => spotEls[i].classList.toggle('spot--right', s[5] > 0.74));
-        if (S3.mine !== mineId) { S3.mine = mineId; S3.build(mineId); } else S3.resize();
+        if (S3.mine !== mineId) { S3.mine = mineId; S3.build(mineId, built3D); } else S3.resize();
         introFrame();
         return;
       }
@@ -766,7 +766,8 @@
     function setMine(id) {
       if (id === mineId && spotEls.length) return;
       mineTabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.mine === id)));
-      const swap = () => { mineId = id; buildSpots(); introLayout(); intro.classList.remove('is-swapping'); };
+      // Con la escena 3D, el desvanecido termina cuando la mina nueva está construida (built3D)
+      const swap = () => { mineId = id; buildSpots(); introLayout(); if (!S3) intro.classList.remove('is-swapping'); };
       if (!spotEls.length || reduceMotion) { swap(); return; }
       intro.classList.add('is-swapping');
       setTimeout(swap, 200);
@@ -910,12 +911,13 @@
 
       // Terreno: una malla fina en la zona de la mina y otra amplia alrededor que se pierde en el fondo,
       // así al girar nunca se ve un borde
-      function terrain(fn, w, d, cz, low, seg, fade) {
+      function* terrain(fn, w, d, cz, low, seg, fade) {
         const g = new T.PlaneGeometry(w, d, Math.round(w * seg), Math.round(d * seg));
+        yield;
         g.rotateX(-Math.PI / 2);
         g.translate(0, 0, cz);
         const p = g.attributes.position;
-        for (let i = 0; i < p.count; i++) p.setY(i, fn(p.getX(i), p.getZ(i)));
+        for (let i = 0; i < p.count; i++) { p.setY(i, fn(p.getX(i), p.getZ(i))); if (i % 16384 === 16383) yield; }
         const mat = new T.ShaderMaterial({
           vertexShader: terrainVS, fragmentShader: terrainFS, transparent: true, side: T.DoubleSide,
           extensions: { derivatives: true },
@@ -1361,14 +1363,16 @@
         return g;
       }
 
-      function buildTajo() {
+      function* buildTajo() {
         groundFn = hTajo;
-        world.add(terrain(hTajo, 380, 380, 0, BENCHES * BENCH_H, 1, [-1, 0, 172, 172.01]));
-        world.add(terrain(hTajo, 1100, 1100, 0, BENCHES * BENCH_H, 0.32, [171.99, 172, 420, 540]));
+        world.add(yield* terrain(hTajo, 380, 380, 0, BENCHES * BENCH_H, 1, [-1, 0, 172, 172.01]));
+        yield;
+        world.add(yield* terrain(hTajo, 1100, 1100, 0, BENCHES * BENCH_H, 0.32, [171.99, 172, 420, 540]));
         const pitPoint = (a, rr) => {
           const x = PIT.x + Math.cos(a) * PIT.rx * rr, z = PIT.z + Math.sin(a) * PIT.rz * rr;
           return new T.Vector3(x, hTajo(x, z), z);
         };
+        yield;
         // Crestas de bancos
         for (let k = 1; k <= BENCHES; k++) {
           const rr = 1 - (k - 0.5) / BENCHES, pts = [];
@@ -1380,6 +1384,7 @@
         }
         tag('TAJO', PIT.x, 8, PIT.z - PIT.rz - 4);
 
+        yield;
         // Rampa de dos carriles: del borde del tajo al frente de minado
         const ramp = [];
         for (let t = 0; t <= 1.0001; t += 0.01) {
@@ -1388,6 +1393,7 @@
         }
         const face = ramp[ramp.length - 1], rim = ramp[0];
 
+        yield;
         // Frente de minado: pala eléctrica cargando, subestación y perforadoras en el banco
         const loadSpot = face.clone().add(new T.Vector3(3, 0, -2));
         const shovel = shovelModel();
@@ -1404,6 +1410,7 @@
         block(subst.x, subst.y, subst.z, 3, 2.4, 2.4, 0xf3b35c);
         lineThrough([subst.clone().add(new T.Vector3(0, 0.4, 0)), shovel.position.clone().add(new T.Vector3(0, 0.4, 0))], 0xf3b35c, 0.8, true);
         tag('FRENTE DE CARGUÍO', face.x - 6, face.y + 16, face.z + 4);
+        yield;
         // Plataforma de perforación propia en el lado norte del tajo, lejos de la rampa y los volquetes
         const DP = new T.Vector3(-73, -10.8, -46);
         lineThrough([[-8, -6], [8, -6], [8, 6], [-8, 6], [-8, -6]].map(([x, z]) => new T.Vector3(DP.x + x, DP.y + 0.3, DP.z + z)), 0x9fe2ff, 0.6, true);
@@ -1422,6 +1429,7 @@
         }
         tag('PERFORACIÓN Y VOLADURA', DP.x, DP.y + 18, DP.z);
 
+        yield;
         // Chancadora primaria: plataforma elevada de descarga, muro, tolva y edificio abajo
         const crEnd = new T.Vector3(14, 7.4, -30), hopperAt = new T.Vector3(21, 7, -30);
         const crusher = new T.Group();
@@ -1432,6 +1440,7 @@
         world.add(crusher);
         tag('CHANCADORA PRIMARIA', 28, 18, -30);
 
+        yield;
         // Botadero de desmonte con descargas en la cresta
         tag('BOTADERO', 46, 16, 60);
         const dbEnd = new T.Vector3(34, 0, 48); dbEnd.y = hTajo(dbEnd.x, dbEnd.z);
@@ -1440,6 +1449,7 @@
           pile.position.set(x, hTajo(x, z) + 0.6, z); world.add(pile);
         });
 
+        yield;
         // Red vial: una sola vía principal sale del tajo hasta un empalme; desde ahí nacen los ramales.
         // Cada ramal empieza en un punto exacto de su vía madre, así ninguna carretera queda encima de otra.
         const near = (P, x, z) => P.reduce((b, p, i) => { const d = (p.x - x) ** 2 + (p.z - z) ** 2; return d < b.d ? { i, d } : b; }, { i: 0, d: Infinity }).i;
@@ -1462,6 +1472,7 @@
         roadway(hTajo, null, 3.4, toGate, joints);
         roadway(hTajo, null, 3, plantLink, joints);
         roadway(hTajo, null, 2.4, toMagazine, joints);
+        yield;
         // Empalmes: una explanada limpia donde se unen las vías
         joints.forEach(j => {
           const geo = new T.CircleGeometry(j === J0 ? 6.5 : 4.8, 32);
@@ -1471,6 +1482,7 @@
           world.add(new T.Mesh(geo, new T.MeshBasicMaterial({ color: 0x223250, side: T.DoubleSide })));
         });
 
+        yield;
         // Ciclo de acarreo: rampa → vía principal → chancadora (mineral) o botadero (desmonte)
         const upRamp = ramp.slice().reverse();
         const route = tail => new T.CatmullRomCurve3([face.clone().add(new T.Vector3(3, 0, -2)), ...upRamp, ...mainOut.slice(1), ...tail.slice(1)], false, 'centripetal');
@@ -1478,6 +1490,7 @@
         [0, 0.4, 0.8].forEach(o => haulTruck(oreRoute, o, hopperAt));
         [0.2, 0.6].forEach(o => haulTruck(wasteRoute, o, new T.Vector3(40, dbEnd.y - 2, 54)));
         tag('GARITA', 132, 8, 96);
+        yield;
         // Alumbrado: postes en planta, oficinas, campamento, chancadora, taller y a lo largo de la vía de acceso
         [[60, -76], [86, -76], [58, -52], [92, -50], [64, 6], [80, 6], [94, 14], [60, 24], [60, 44], [92, 44], [22, -40], [38, -22], [10, -14], [30, -2], [96, -26], [104, 2]].forEach(([x, z]) => lampPost(x, z));
         for (let k = 12; k < toGate.length - 40; k += 16) {
@@ -1486,6 +1499,7 @@
           lampPost(p.x + sx / sl * 4.2, p.z + sz / sl * 4.2);
         }
 
+        yield;
         // Pila de gruesos con faja apiladora (el mineral cae sobre la pila) y faja de alimentación a la planta
         const PILE = new T.Vector3(46, 0, -46);
         conveyor([[31, 4, -33], [PILE.x, 17, PILE.z], [PILE.x, 11.6, PILE.z]], 1);
@@ -1494,6 +1508,7 @@
         tag('PILA DE GRUESOS', PILE.x, 22, PILE.z);
         conveyor([[PILE.x + 4, 1.6, PILE.z - 4], [64, 9, -60]], 1);
 
+        yield;
         // Concentradora: molino SAG, molinos de bolas, celdas de flotación, espesadores y relavera
         shed(72, 1, -64, 18, 10, 14, 0, 0x223558);
         tag('CONCENTRADORA', 74, 20, -66);
@@ -1509,6 +1524,7 @@
         water.rotation.x = -Math.PI / 2; water.position.set(100, 3.1, -12); world.add(water);
         tag('RELAVERA', 100, 9, -12);
 
+        yield;
         // Servicios: taller, grifo, almacén, polvorín, oficinas y campamento
         shed(20, 1, -8, 13, 6, 10, 0.2, 0x2a3f66);
         tag('TALLER DE MANTENIMIENTO', 20, 13, -8);
@@ -1529,6 +1545,7 @@
         for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) shed(66 + i * 10, 1, 30 + j * 8, 7, 2.5, 4, 0, 0x223558);
         tag('CAMPAMENTO', 76, 9, 38);
 
+        yield;
         // Geotecnia en una zona apartada: líneas de tensión, prismas y radares que vigilan el talud oeste
         for (let k = 0; k < 4; k++) {
           const pts = [];
@@ -1562,14 +1579,17 @@
         });
         tag('RADAR DE TALUD', pitPoint(2.16, 1.6).x, 12, pitPoint(2.16, 1.6).z);
 
+        yield;
         // Luces de las instalaciones para la guardia de noche
         [[30, 10, -30, 7], [21, 9, -30, 5], [46, 18, -46, 5], [72, 13, -64, 9], [86, 10, -58, 6], [20, 9, -8, 6], [18, 6, 12, 5], [40, 8, 18, 5], [76, 6, 34, 8], [72, 15, 16, 6], [100, 5, -12, 6], [subst.x, subst.y + 3, subst.z, 4]].forEach(([x, y, z, s]) => addLamp(new T.Vector3(x, y, z), s));
+        yield;
         // Torres de iluminación del tajo
         lightTower(pitPoint(-2.2, 1.16), DP.clone());
         lightTower(pitPoint(0.9, 1.15), face.clone());
         lightTower(pitPoint(2.6, 1.15), pitPoint(2.9, 0.55));
         lightTower(pitPoint(-0.9, 1.15), pitPoint(-0.6, 0.6));
 
+        yield;
         // Torre de operaciones: desde aquí se ve todo el tajo
         const towerAt = pitPoint(-2.65, 1.2);
         const tower = new T.Group(); tower.position.copy(towerAt); tower.scale.setScalar(0.6);
@@ -1600,12 +1620,14 @@
         };
       }
 
-      function buildSub() {
+      function* buildSub() {
         groundFn = hSub;
-        world.add(terrain(hSub, 380, 190, -95, 40, 1, [-1, 0, 172, 172.01]));
-        world.add(terrain(hSub, 1100, 550, -275, 40, 0.32, [171.99, 172, 420, 540]));
+        world.add(yield* terrain(hSub, 380, 190, -95, 40, 1, [-1, 0, 172, 172.01]));
+        yield;
+        world.add(yield* terrain(hSub, 1100, 550, -275, 40, 0.32, [171.99, 172, 420, 540]));
         const smooth = (a, b, v) => { const t = Math.min(1, Math.max(0, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
         const cutFade = p => (1 - smooth(150, 420, Math.abs(p.x))) * smooth(-150, -102, p.y);
+        yield;
         // Línea que se apaga hacia los bordes del corte (se suma a la luz, así no deja cortes bruscos)
         function glowLine(points, color, opacity) {
           const c = new T.Color(color), cols = [];
@@ -1617,6 +1639,7 @@
           return l;
         }
 
+        yield;
         // Corte de la cordillera como un vidrio oscuro: deja ver las labores en 3D detrás
         const prof = [];
         for (let x = -540; x <= 540; x += 3) prof.push(new T.Vector2(x, hSub(x, 0)));
@@ -1645,6 +1668,7 @@
           for (let x = -420; x <= 420; x += 6) s.push(new T.Vector3(x, y + 1.6 * Math.sin(x * 0.03 + y) + 0.8 * Math.sin(x * 0.11), 0.15));
           glowLine(s, 0x38bdf8, 0.09);
         }
+        yield;
         // Contorno del bloque de roca: el corte tiene fondo
         const BZ = -70;
         {
@@ -1652,6 +1676,7 @@
           [-125, 125].forEach(x => lineThrough([new T.Vector3(x, hSub(x, BZ), BZ), new T.Vector3(x, -100, BZ)], 0x38bdf8, 0.14));
         }
 
+        yield;
         // Labores en 3D: túneles de sección en bóveda, con piso, hastiales y corona
         const DH = 5.4, DW = 4.6;
         const PROF = [[-0.5, 0], [0.5, 0], [0.5, 0.55]];
@@ -1689,6 +1714,7 @@
           if (o.lamps !== false) L[2].forEach((p, k) => { if (k % 9 === 4) caveLamp(p.clone().add(new T.Vector3(0, -0.6, 0))); });
           return P;
         }
+        yield;
         // Chimeneas, pique y echaderos: tubos verticales
         function raise(x, z, y0, y1, r, color) {
           const m = new T.Mesh(new T.CylinderGeometry(r, r, y1 - y0, 18, 1, true), new T.MeshStandardMaterial({ color: color || 0x3d6db5, emissive: 0x0a2a5a, emissiveIntensity: 0.6, transparent: true, opacity: 0.32, side: T.DoubleSide, depthWrite: false }));
@@ -1698,15 +1724,18 @@
         }
         const V = (x, y, z) => new T.Vector3(x, y, z);
 
+        yield;
         // Rampa en espiral: baja girando y en cada vuelta sale a un nivel
         const RC = V(-80, 0, -34), RR = 13, ZM = -10;
         const rampCtrl = [V(-50, hSub(-50, -7), -8), V(-58, -2, -18), V(-67, -12, -34)];
         for (let th = -0.35; th >= -Math.PI * 8; th -= 0.35) rampCtrl.push(V(RC.x + RR * Math.cos(th), -12 + th / (Math.PI * 2) * 18, RC.z + RR * Math.sin(th)));
         tunnel(rampCtrl, { n: 420 });
+        yield;
         // Niveles: acceso desde la rampa y galería principal hacia el este
         const LV = [[-30, 114], [-48, 92], [-66, 114], [-84, 110]];
         LV.forEach(([y, xe]) => tunnel([V(RC.x + RR, y, RC.z), V(-58, y, -22), V(-48, y, ZM + 0.5), V(-36, y, ZM), V(xe, y, ZM)]));
 
+        yield;
         // Pique con estaciones en cada nivel, echadero y bolsillo de carga
         const XS = 10, ZA = -7, ZB = -4.6, zc = -5.8, hf = hSub(XS, zc);
         raise(XS, zc, -98, hf, 3.1);
@@ -1726,19 +1755,23 @@
         [[hopper, 9, 0.05], [oreDown, 7, 0.09]].forEach(([c, n, sp]) => {
           for (let k = 0; k < n; k++) { const lump = new T.Mesh(new T.DodecahedronGeometry(0.55), ORE()); world.add(lump); movers.push({ grp: lump, curve: c, speed: sp, offset: k / n, lift: 0.4, upright: true }); }
         });
+        yield;
         // Chimenea de ventilación principal
         const XR = 112, ZR = -6, gF = hSub(XR, ZR);
         raise(XR, ZR, -84, gF, 1.8);
 
+        yield;
         // Mineral: color cálido. Relleno: gris. Vacío explotado: oscuro con contorno
         const oreMat = () => new T.MeshStandardMaterial({ color: 0xe0a43a, emissive: 0x6b3d05, emissiveIntensity: 0.5, transparent: true, opacity: 0.32, depthWrite: false, side: T.DoubleSide, roughness: 0.7 });
         const fillMat = () => new T.MeshStandardMaterial({ color: 0x7d8aa0, transparent: true, opacity: 0.72, roughness: 0.95, metalness: 0, side: T.DoubleSide });
         const voidMat = () => new T.MeshBasicMaterial({ color: 0x02050c, transparent: true, opacity: 0.5, depthWrite: false, side: T.DoubleSide });
+        yield;
         // Forma natural: ondulaciones suaves para que ningún cuerpo sea un bloque perfecto
         const wob = (x, y, z) => Math.sin(x * 0.21 + y * 0.13) * Math.cos(z * 0.17 - y * 0.09) + 0.5 * Math.sin(x * 0.47 - z * 0.31 + y * 0.23);
         const tagOn = (text, x, y, z) => { const t = tag(text, x, y, z); t.visible = true; t.scale.multiplyScalar(2); };
         const ring = (pts, color, op) => lineThrough(pts.concat([pts[0]]), color, op);
 
+        yield;
         // 1) Veta irregular: corte y relleno ascendente (rebanadas que suben, rellenando la de abajo)
         const veinAt = y => 26 - 0.3 * y;
         const vc = (y, z) => veinAt(y) + 3 + 1.8 * wob(y * 0.6, 3, z * 0.6);
@@ -1772,6 +1805,7 @@
         veinSlab(sTop, sEnd, zFace, null, voidMat(), 0x9fe2ff, 0.8);
         veinSlab(sEnd, -12, null, null, oreMat(), 0xf3b35c, 0.45);
         tunnel([V(vc(-66, ZM) - 2, -66, ZM), V(vc(sTop, -17), sTop, vNear(sTop) - 1)], { lamps: false });
+        yield;
         // Echadero dentro del relleno y scoop limpiando la rebanada
         const cfX = vc(sTop, -21);
         raise(cfX, -21, S0, sTop, 0.9, 0x5b6b85);
@@ -1779,6 +1813,7 @@
         movers.push({ lhd: true, grp: s3, curve: new T.CatmullRomCurve3([-34, -30, -26, -24].map(z => V(vc(sTop, z), sTop, z)), false, 'centripetal'), period: 20, offset: 0.55 });
         tagOn('CORTE Y RELLENO', vc(-104, -30), -112, vNear(-104));
 
+        yield;
         // 2) Cuerpo masivo irregular: tajeos por subniveles dentro de la envolvente de mineral
         const BC = V(85, -56, -38), BR = V(24, 21, 23);
         const bodyR = (x, y, z) => 1 + 0.12 * wob(x * 9, y * 9, z * 9);
@@ -1805,6 +1840,7 @@
           const m = new T.Mesh(new T.DodecahedronGeometry(0.85 - (k % 4) * 0.12), ORE());
           m.position.set(BC.x + ((k * 3.7) % 8) - 4, openBottom + 0.6 + Math.floor(k / 9) * 1.0, BC.z + ((k * 5.3) % 8) - 4); m.rotation.set(k, k * 2, 0); world.add(m);
         }
+        yield;
         // Subnivel de perforación con abanicos de taladros en el tajeo siguiente
         const SLY = -62;
         tunnel([V(85, SLY, ZM), V(85, SLY, -54)], { lamps: false });
@@ -1819,6 +1855,7 @@
         fanL.computeLineDistances(); world.add(fanL);
         const ld = bolterModel(); ld.position.set(85, SLY, -41); ld.rotation.y = Math.PI; world.add(ld);
         movers.push({ bolter: true, boom: ld.userData.boom });
+        yield;
         // Nivel de extracción bajo los tajeos, con su embudo y scoop
         tunnel([V(85, -84, ZM), V(85, -84, -54)]);
         [-28, -38, -48].forEach(z => tunnel([V(78, -84, z), V(92, -84, z)], { lamps: false, n: 6 }));
@@ -1828,6 +1865,7 @@
         movers.push({ lhd: true, grp: s1, curve: new T.CatmullRomCurve3([V(85, -84, -34), V(85, -84, -17), V(81, -84, -11), V(67.5, -84, -10.5)], false, 'centripetal'), period: 24, offset: 0 });
         tagOn('TAJEOS POR SUBNIVELES', 88, -97, -16);
 
+        yield;
         // 3) Manto irregular: cámaras y pilares (los pilares son mineral que sostiene el techo)
         const MY = -84, MH = DH, MC = V(-22, MY, -40);
         const outline = (cx, cz, rx, rz, amp, seed) => { const p = []; for (let a = 0; a < Math.PI * 2 - 0.01; a += Math.PI / 18) { const k = 1 + amp * Math.sin(a * 3 + seed) + amp * 0.6 * Math.cos(a * 5 + seed * 2); p.push(new T.Vector2(cx + Math.cos(a) * rx * k, -(cz + Math.sin(a) * rz * k))); } return p; };
@@ -1853,6 +1891,7 @@
         movers.push({ jumbo: true, feeds: mj.userData.feeds, dust: mj.userData.dust });
         tagOn('CÁMARAS Y PILARES', -22, MY + 11, -66);
 
+        yield;
         // Mangas de ventilación: ventilador auxiliar en la galería y ducto colgado del techo hasta el frente ciego
         const mangaMat = solid(0xf2c14e, { metalness: 0, roughness: 0.7, emissive: 0x5a3c00, emissiveIntensity: 0.35 });
         function manga(pts) {
@@ -1872,6 +1911,7 @@
         manga([crown(vc(-66, ZM) - 6, -66, ZM + 1.3), crown(vc(-66, ZM) - 2, -66, ZM + 1.3), crown(vc(sTop, -17), sTop, -18), crown(vc(sTop, -26), sTop, -26), crown(vc(sTop, -32), sTop, -32)]);
         manga([crown(85, SLY, -16), crown(85, SLY, -30), crown(85, SLY, -38)]);
 
+        yield;
         // Líneas cauville: locomotora con carros mineros entre la tolva del cuerpo masivo y el echadero
         const RLY = -48;
         const rails = [], sleepers = [];
@@ -1886,6 +1926,7 @@
         const cars = [0, 1, 2, 3].map(() => { const c = carModel(); world.add(c); return c; });
         movers.push({ train: true, loco, cars, xW: 25, xE: 62, y: RLY, z: ZM, period: 34 });
 
+        yield;
         // Labores de servicio: taller de mantenimiento, bombeo, refugio y polvorín dentro mina
         tunnel([V(-44, -84, ZM), V(-44, -84, -1.5)], { w: 7, h: 6.4, n: 6 });
         const ws = scoopModel(); ws.position.set(-46, -84, -4.5); ws.userData.load.visible = false; world.add(ws);
@@ -1905,6 +1946,7 @@
         const magL = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: 0xf3b35c, transparent: true, opacity: 0.8, blending: T.AdditiveBlending, depthWrite: false }));
         magL.position.set(-34, -48 + 3.6, -25); magL.scale.setScalar(2.4); world.add(magL);
 
+        yield;
         // Desarrollo, sostenimiento y control geomecánico en las galerías
         const jb = jumboModel(); jb.position.set(92 - 6.4, -48, ZM); jb.rotation.y = Math.PI / 2; world.add(jb);
         movers.push({ jumbo: true, feeds: jb.userData.feeds, dust: jb.userData.dust });
@@ -1921,6 +1963,7 @@
         part(world, new T.BoxGeometry(2.6, 1.8, 1.8), MINE_Y(), 106, -84 + 0.9, ZM, 0.5);
         [[94, -114, -20], [102, -118, -30], [108, -116, -12]].forEach(([x, y, z]) => lineThrough([V(106, -84, ZM), V(x, y, z)], 0x9fe2ff, 0.55, true));
 
+        yield;
         // Acarreo con volquetes: cargan bajo la tolva del nivel -66, suben por la rampa, salen por la bocamina
         // y llevan el mineral por la vía hasta la cancha de la planta. La rampa es de un carril: los que bajan
         // vacíos esperan en las bahías para dejar pasar a los que suben cargados.
@@ -1947,6 +1990,7 @@
           if (dir) dir.copy(routePts[hi]).sub(routePts[lo]).normalize();
         };
         route.sample = sampleRoute;
+        yield;
         // Bahías de cruce a lo largo de la rampa, hacia el lado exterior de la espiral
         const bays = [], bp0 = new T.Vector3(), bd0 = new T.Vector3();
         for (let s = 70; s < Lu - 25; s += 52) bays.push(s);
@@ -1968,6 +2012,7 @@
         });
         movers.push({ haul: true, trucks, route });
 
+        yield;
         // Izaje: castillo reticulado, poleas, dos skips que se cruzan, cables al winche y tolva de mineral
         const HF = 27, RS = 1.7;
         const lat = [], hw = 3.2, tw = 1.9;
@@ -2008,17 +2053,20 @@
         movers.push({ hoist: true, skips, ropes, yTop, yBot, chute, fall });
         addLamp(new T.Vector3(XS + RS, yS + RS + 0.6, zc), 3.4);
 
+        yield;
         // Faja de la tolva a la cancha de mineral grueso y de allí al molino
         const SP = new T.Vector3(54, 0, -31); SP.y = hSub(SP.x, SP.z);
         conveyor([[XB, hf + 7.4, zc], [XB + 3, hf + 7.4, -12], [SP.x - 2, SP.y + 11, SP.z + 1]], 5);
         const pile = new T.Mesh(new T.ConeGeometry(7, 8, 18), ORE()); pile.position.set(SP.x, SP.y + 4, SP.z); world.add(pile);
         conveyor([[SP.x + 5, SP.y + 1.2, SP.z - 3], [64, hSub(64, -38) + 10, -38]], 5);
 
+        yield;
         // Planta concentradora: molienda, flotación, espesadores y relave
         shed(70, hSub(70, -40), -40, 12, 9, 10, 0, 0x223558);
         shed(86, hSub(86, -44), -44, 10, 6, 9, 0);
         disc(64, hSub(64, -56), -56, 5); disc(80, hSub(80, -58), -58, 4);
         lineThrough(onTerrain(hSub, [[84, -62], [96, -84], [110, -110], [128, -140]], 0.6), 0x9fb0c8, 0.5, true);
+        yield;
         // Ventilación principal: ventilador sobre la chimenea, girando y expulsando el aire viciado
         part(world, new T.BoxGeometry(4, 2.4, 4), DARK(), XR, gF + 1.2, ZR, 0.5);
         part(world, new T.CylinderGeometry(1.1, 1.1, 3, 12), DARK(), XR, gF + 3.6, ZR, 0.4);
@@ -2039,6 +2087,7 @@
           movers.push({ grp: s, curve: airPath, speed: 0.07, offset: k / 12, lift: 0, upright: true });
         }
 
+        yield;
         // Bocamina: portal de concreto donde la rampa sale a superficie
         const gP = hSub(-50, -7);
         const ps = new T.Shape([new T.Vector2(-3.9, 0), new T.Vector2(3.9, 0), new T.Vector2(3.9, 7), new T.Vector2(-3.9, 7)]);
@@ -2049,6 +2098,7 @@
         portal.rotation.y = Math.atan2(8, 10) + Math.PI;
         addLamp(new T.Vector3(-49, gP + 7.6, -7), 4.5);
 
+        yield;
         // Superficie: taller, almacén, oficinas y campamento en la ladera, unidos por vías
         shed(-30, hSub(-30, -6), -6, 12, 6, 9, 0);
         shed(-8, hSub(-8, -40), -40, 10, 5, 8, 0, 0x2a3f66);
@@ -2212,12 +2262,34 @@
         return path;
       }
 
-      function build(id) {
+      /* Construcción por partes: corre tras el primer pintado y cede el control al navegador entre partes.
+         Mientras construye no se dibuja (el lienzo conserva su último cuadro); si llega otra mina, la construcción
+         a medias se abandona y la nueva empieza liberando lo que alcanzó a armar */
+      let job = 0, building = false, firstBuild = true;
+      const tick = (() => { const ch = new MessageChannel(), q = []; ch.port1.onmessage = () => q.shift()(); return f => { q.push(f); ch.port2.postMessage(0); }; })();
+      function build(id, done) {
+        const my = ++job, it = steps(id);
+        building = true;
+        const slice = () => {
+          if (my !== job) return;
+          const t0 = performance.now();
+          let r;
+          do r = it.next(); while (!r.done && performance.now() - t0 < 40);
+          if (my !== job) return;
+          if (!r.done) { tick(slice); return; }
+          building = false;
+          if (done) done();
+        };
+        // La primera vez se cede una vuelta más antes de empezar, para que el navegador pinte la página primero
+        // (sin requestAnimationFrame ni setTimeout: un reloj detenido los congela y la escena no aparecería)
+        if (firstBuild) { firstBuild = false; tick(() => tick(slice)); } else tick(slice);
+      }
+      function* steps(id) {
         if (world) { scene.remove(world); world.traverse(o => { if (o.geometry) o.geometry.dispose(); [].concat(o.material || []).forEach(m => m.dispose()); if (o.isInstancedMesh) o.dispose(); }); }
         world = new T.Group();
         scene.add(world);
         movers = []; flashes = []; terrainMats = []; nightLights = []; windows = [];
-        cfg = id === 'tajo' ? buildTajo() : buildSub();
+        cfg = yield* (id === 'tajo' ? buildTajo() : buildSub());
         waveStart = -1; wasLit = false; litAmount = 0;
         // Núcleo AgentraX: el emblema modelado en 3D (cinta de tres puntas, estrella al centro y esferas)
         core = new T.Group();
@@ -2269,6 +2341,7 @@
         core.add(halo, emblem, light, beam);
         core.userData = { halo, emblem, metal, star, orbs, light, beam };
         world.add(core);
+        yield;
         // Descarga de energía: esfera de plasma con chispas en espiral y rayos eléctricos al súper agente
         const glowSprite = (color, size, opacity) => {
           const s = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color, transparent: true, opacity, blending: T.AdditiveBlending, depthWrite: false }));
@@ -2302,6 +2375,7 @@
         world.add(blast);
         const impactAt = new T.Vector3(0, (id === 'tajo' ? hTajo(0, 0) : hSub(0, -6)) + 1, id === 'tajo' ? 0 : -6);
         shot = { bolt, plasmaOuter, plasmaInner, trail, arcs, ray, rayCore, rayHalo, flow, blast, impactAt, start: -1, hit: -1 };
+        yield;
         // Balizas con antena y ruta al núcleo
         nodes = MINES[id].spots.map((s, i) => {
           const base = cfg.anchors && cfg.anchors[s[0]] ? cfg.anchors[s[0]].clone() : cfg.at(s[5], s[6]);
@@ -2328,8 +2402,12 @@
           });
           return { top, stem, pad, gem, path, beamMesh, packets, orbit, color, index: tg.index.count, phase: (i * 0.37) % 1, speed: 0.22 + (i % 4) * 0.03 };
         });
-        fuse(id);
+        yield* fuse(id);
         resize();
+        yield;
+        // Los programas de sombreado se preparan en una parte propia: el primer cuadro solo sube la geometría
+        renderer.compile(scene, camera);
+        yield;
       }
 
       /* Fusión: las piezas fijas con material equivalente se dibujan en una sola orden */
@@ -2563,7 +2641,7 @@
       // Las transparentes ubicadas en world no: al unirlas cambia su centro y su orden frente al relieve al girar.
       // Dentro de un equipo sí: sus piezas están a pocos metros unas de otras
       const TSIDE = ['', 'o'];
-      function fuse(id) {
+      function* fuse(id) {
         world.updateMatrixWorld(true);
         const live = new Set(), skip = new Set(), uni = new Map();
         const add = (S, l) => l.forEach(o => { if (o) S.add(o); });
@@ -2580,6 +2658,7 @@
         // Grupos con un solo valor por cuadro (charcos y conos de luz, ventanas): comparten material
         nightLights.forEach(l => { if (l.m.isMesh) uni.set(l.m, 'n' + l.max); else skip.add(l.m); });
         windows.forEach(c => uni.set(c, 'w'));
+        yield;
         const groups = new Map(), piece = new Set();
         world.traverse(o => {
           if (!(o.isMesh || o.isLine) || !o.visible || skip.has(o) || (live.has(o) && !uni.has(o))) return;
@@ -2643,7 +2722,8 @@
           p.attach(ch);
         })));
         const old = [], kept = new Set();
-        merged.forEach(G => {
+        yield;
+        for (const G of merged) {
           // El objeto fusionado es la primera pieza (conserva su orden de creación), ubicada en el centro de las piezas
           const c = new T.Vector3();
           if (G.side !== 'o') { G.list.forEach(p => c.add(p.at)); c.divideScalar(G.list.length); }
@@ -2657,9 +2737,11 @@
           f.position.copy(c); f.rotation.set(0, 0, 0); f.scale.set(1, 1, 1);
           G.a.add(f);
           kept.add(f);
-        });
+          yield;
+        }
         cards(id, live, skip, old);
         beacons(old);
+        yield;
         herd(skip);
         flocks(new Set([core, shot.bolt, shot.blast].concat(shot.trail, shot.flow, movers.filter(m => m.grp && m.grp.isSprite).map(m => m.grp))));
         // Grupos que quedaron vacíos
@@ -2707,7 +2789,7 @@
 
       let lastNow = 0;
       function render(rs, lit, prog, clock, now) {
-        if (!cfg) return;
+        if (!cfg || building) return;
         const dt = lastNow ? Math.min(0.05, (now - lastNow) / 1000) : 0;
         lastNow = now;
         // Cámara: de baja y lejana a alta y cercana mientras todo se conecta
@@ -3114,6 +3196,9 @@
       clockShift.textContent = dayShift ? "Guardia día" : "Guardia noche";
       clockEl.classList.toggle("is-night", !dayShift);
     });
+    // La escena se construye por partes tras el primer pintado: hasta entonces se ve el fondo, y aparece con el desvanecido de siempre
+    function built3D() { introFrame(); intro.classList.remove('is-swapping'); hub.style.opacity = ''; }
+    if (S3) { intro.classList.add('is-swapping'); hub.style.opacity = '0'; }
     buildSpots();
     introLayout();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(introLayout);
