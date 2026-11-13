@@ -2333,17 +2333,19 @@
       }
 
       /* Fusión: las piezas fijas con material equivalente se dibujan en una sola orden */
-      const matKey = o => {
+      // tint: sin color ni opacidad (van por vértice, paso 5)
+      const matKey = (o, tint) => {
         const m = o.material;
-        return [o.isMesh ? 'M' : 'L', m.type, m.color && m.color.getHex(), m.opacity, m.transparent, m.depthWrite, m.depthTest, m.side, m.blending,
+        return [o.isMesh ? 'M' : 'L', m.type, tint ? '' : m.color && m.color.getHex(), tint ? '' : m.opacity, m.transparent, m.depthWrite, m.depthTest, m.side, m.blending,
           m.vertexColors, m.fog, m.metalness, m.roughness, m.emissive && m.emissive.getHex(), m.emissiveIntensity,
           m.dashSize, m.gapSize, m.scale, m.map && m.map.uuid, m.alphaTest, m.polygonOffset, m.wireframe, m.flatShading, o.renderOrder].join('|');
       };
       const needs = (o, m) => ['position'].concat(o.isMesh && !m.isMeshBasicMaterial ? ['normal'] : [], m.map ? ['uv'] : [], m.vertexColors ? ['color'] : [], m.isLineDashedMaterial ? ['lineDistance'] : []);
       // Une las piezas ya llevadas al marco del ancla: posición, normal (con su matriz normal), uv, color y distancia de línea
-      function mergeGeo(list, c) {
+      function mergeGeo(list, c, tint) {
         const o0 = list[0].o, lines = !o0.isMesh, keys = needs(o0, o0.material), sz = {}, data = {}, idx = [];
         keys.forEach(k => { sz[k] = o0.geometry.attributes[k].itemSize; data[k] = []; });
+        if (tint) data.color = [];
         const v = new T.Vector3(), nm = new T.Matrix3();
         let nv = 0;
         list.forEach(({ o, mx }) => {
@@ -2354,6 +2356,7 @@
             data.position.push(v.x, v.y, v.z);
             if (sz.normal) { v.fromBufferAttribute(A.normal, i).applyMatrix3(nm).normalize(); data.normal.push(v.x, v.y, v.z); }
             keys.slice(sz.normal ? 2 : 1).forEach(k => { for (let j = 0; j < sz[k]; j++) data[k].push(A[k].array[i * sz[k] + j]); });
+            if (tint) data.color.push(o.material.color.r, o.material.color.g, o.material.color.b, o.material.opacity);
           }
           const I = g.index ? g.index.array : null, ni = I ? I.length : n, at = j => nv + (I ? I[j] : j);
           if (lines && !o.isLineSegments) for (let j = 0; j < ni - 1; j++) idx.push(at(j), at(j + 1));
@@ -2363,9 +2366,13 @@
         });
         const g = new T.BufferGeometry();
         keys.forEach(k => g.setAttribute(k, new T.Float32BufferAttribute(data[k], sz[k])));
+        if (tint) g.setAttribute('color', new T.Float32BufferAttribute(data.color, 4));
         g.setIndex(idx);
         return g;
       }
+      const TINT = new Set(['MeshBasicMaterial', 'MeshStandardMaterial', 'MeshLambertMaterial', 'MeshPhongMaterial', 'LineBasicMaterial', 'LineDashedMaterial']);
+      // Las transparentes ubicadas no: al unirlas cambia su centro y su orden frente al relieve al girar
+      const TSIDE = ['', 'o'];
       function fuse(id) {
         world.updateMatrixWorld(true);
         const live = new Set(), skip = new Set(), uni = new Map();
@@ -2397,16 +2404,46 @@
           const at = new T.Vector3().setFromMatrixPosition(mx);
           // Transparentes: no mezclar piezas en el origen con piezas ubicadas; en sub, separar por lado del vidrio
           const side = !m.transparent ? '' : at.lengthSq() < 1e-8 ? 'o' : id === 'sub' && a === world && at.z < 0 ? 'b' : 'f';
-          const key = a.id + '|' + (uni.get(o) || '') + '|' + side + '|' + matKey(o);
-          if (!groups.has(key)) groups.set(key, { a, side, list: [] });
+          // Paso 5: piezas que solo difieren en color u opacidad van juntas, con color RGBA por vértice
+          const tint = !uni.has(o) && !m.vertexColors && TINT.has(m.type) && TSIDE.includes(side);
+          const pre = a.id + '|' + (uni.get(o) || '') + '|' + side + '|', key = pre + matKey(o);
+          if (!groups.has(key)) groups.set(key, { a, side, tk: tint ? pre + matKey(o, true) : null, list: [] });
           groups.get(key).list.push({ o, mx, at });
           piece.add(o);
         });
-        const merged = [];
+        groups.forEach(G => { G.list.sort((p, q) => p.o.id - q.o.id); G.id = G.list[0].o.id; });
+        // Las transparentes en el origen se ordenan por id: solo se unen grupos seguidos en ese orden,
+        // sin otra pieza transparente del mismo origen entre ellos
+        const wp = o => new T.Vector3().setFromMatrixPosition(o.matrixWorld).toArray().map(x => x.toFixed(4)).join();
+        const seq = new Map();
+        groups.forEach(G => { if (G.side !== 'o') return; const k = wp(G.a); if (!seq.has(k)) seq.set(k, []); seq.get(k).push(G); });
+        world.traverse(o => {
+          if (!(o.isMesh || o.isLine || o.isSprite || o.isPoints) || piece.has(o) || ![].concat(o.material).some(m => m.transparent)) return;
+          const k = wp(o); if (seq.has(k)) seq.get(k).push({ id: o.id, tk: null });
+        });
+        const runs = new Map();
+        seq.forEach(L => {
+          L.sort((p, q) => p.id - q.id);
+          let run = null;
+          L.forEach(G => {
+            if (!G.list) { run = null; return; }
+            if (!G.tk || !run || run.tk !== G.tk) { run = { tk: G.tk, gs: [] }; runs.set(G, run); }
+            run.gs.push(G);
+          });
+        });
+        // El resto (opacas y ubicadas) se une por clave sin color ni opacidad
+        const by = new Map();
         groups.forEach(G => {
-          if (G.list.length < 2) { piece.delete(G.list[0].o); return; }
-          G.list.sort((p, q) => p.o.id - q.o.id);
-          merged.push(G);
+          if (G.side === 'o') { const r = runs.get(G); if (r) by.set(G, r.gs); return; }
+          if (!G.tk) { by.set(G, [G]); return; }
+          if (!by.has(G.tk)) by.set(G.tk, []);
+          by.get(G.tk).push(G);
+        });
+        const merged = [];
+        by.forEach(gs => {
+          const list = [].concat(...gs.map(G => G.list)).sort((p, q) => p.o.id - q.o.id);
+          if (list.length < 2) { piece.delete(list[0].o); return; }
+          merged.push({ a: gs[0].a, side: gs[0].side, list });
         });
         // Hijos que no se unen pasan, sin moverse, al ancestro que queda
         merged.forEach(G => G.list.forEach(({ o }) => o.children.slice().forEach(ch => {
@@ -2420,9 +2457,12 @@
           // El objeto fusionado es la primera pieza (conserva su orden de creación), ubicada en el centro de las piezas
           const c = new T.Vector3();
           if (G.side !== 'o') { G.list.forEach(p => c.add(p.at)); c.divideScalar(G.list.length); }
-          const f = G.list[0].o, geo = mergeGeo(G.list, c);
+          const f = G.list[0].o, m0 = f.material;
+          const tint = G.list.some(({ o }) => !o.material.color.equals(m0.color) || o.material.opacity !== m0.opacity);
+          const geo = mergeGeo(G.list, c, tint);
           G.list.forEach(({ o }) => { old.push(o.geometry, o.material); o.parent.remove(o); });
           f.geometry = geo;
+          if (tint) { f.material = m0.clone(); f.material.color.setRGB(1, 1, 1); f.material.opacity = 1; f.material.vertexColors = true; }
           if (!f.isMesh) f.isLineSegments = true; // la tira se dibuja como segmentos
           f.position.copy(c); f.rotation.set(0, 0, 0); f.scale.set(1, 1, 1);
           G.a.add(f);
