@@ -22,15 +22,14 @@
     let mapReady = false, mapStage = 0, countries = [], labels = {}, regions = [], regionsG = null, homeDot = null, homeRing = null, path = null, proj = null, topoData = null, peruData = null, MW = 960, MH = 500;
     let arcsG = null, arcTimers = [];
     const mapDims = () => window.innerWidth < 600 ? [600, 560] : [840, 520];
-    const loadScript = src => new Promise((ok, fail) => { const s = document.createElement('script'); s.src = src; s.crossOrigin = 'anonymous'; s.onload = ok; s.onerror = fail; document.head.appendChild(s); });
+    const loadScript = src => new Promise((ok, fail) => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = ok; s.onerror = fail; document.head.appendChild(s); });
     const svgEl = (tag, attrs, cls) => { const e = document.createElementNS(SVGNS, tag); Object.entries(attrs || {}).forEach(([a, v]) => e.setAttribute(a, v)); if (cls) e.setAttribute('class', cls); return e; };
     async function buildMap() {
-      const CDN = 'https://cdn.jsdelivr.net/npm/';
-      await loadScript(CDN + 'd3-array@3.2.4/dist/d3-array.min.js');
-      await loadScript(CDN + 'd3-geo@3.1.1/dist/d3-geo.min.js');
-      await loadScript(CDN + 'topojson-client@3.1.0/dist/topojson-client.min.js');
-      [topoData, peruData] = await Promise.all([
-        fetch(CDN + 'world-atlas@2.0.2/countries-110m.json').then(r => r.json()),
+      [, , , topoData, peruData] = await Promise.all([
+        loadScript('js/vendor/d3-array.min.js'),
+        loadScript('js/vendor/d3-geo.min.js'),
+        loadScript('js/vendor/topojson-client.min.js'),
+        fetch('datos/countries-110m.json').then(r => r.json()),
         fetch('peru-regiones.json').then(r => r.json()).catch(() => null)
       ]);
       drawMap();
