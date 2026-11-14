@@ -434,9 +434,10 @@
     let mineId = 'tajo', spotEls = [], routes = [], S3 = null;
     let IW = 0, IH = 0, box = { x0: 0, x1: 1, y0: 0, y1: 1 };
     let progress = reduceMotion ? 1 : 0, introVisible = true, introClock = 0, lastIntro = 0;
-    // Avance automático: introT recorre 0 → AUTO_S segundos y el avance sale de una curva suave (progress = ease(introT / AUTO_S)).
+    // Avance automático: introT recorre 0 → AUTO_S segundos y el avance sale de una curva pareja (progress = ease(introT / AUTO_S)).
     // Corre solo con la portada en pantalla, la pestaña visible y la escena lista (sceneReady); la barra lo controla
-    const AUTO_S = 9;
+    // 24 s: cada área se conecta a ritmo pausado (con 9 s se perdía la parte más bonita)
+    const AUTO_S = 24;
     let introT = reduceMotion ? AUTO_S : 0, introHold = false, seeking = false, sceneReady = false;
     const STEPS = [
       '<b>01</b><span>Cada área trabaja por su lado</span>',
@@ -756,9 +757,18 @@
       });
     }
 
-    // Curva suave (seno): arranca y termina despacio; su inversa permite saltar a un avance desde la barra
-    function introProgress() { return 0.5 - 0.5 * Math.cos(Math.PI * introT / AUTO_S); }
-    function seekTo(p) { introT = AUTO_S * Math.acos(1 - 2 * clamp01(p)) / Math.PI; forceFrame = true; }
+    // Curva pareja y suave: velocidad 1 + 0,25·cos(2πu), 0,75× al medio (donde se conectan las áreas, avance 0,12–0,68)
+    // y 1,25× en los extremos (al inicio solo se mueven datos sueltos y el final queda quieto desde 0,9).
+    // Con 24 s, las 10 áreas se completan a lo largo de ~10 s. La inversa (bisección) sirve a la barra
+    const EASE_K = 0.25;
+    const ease = u => u + EASE_K * Math.sin(2 * Math.PI * u) / (2 * Math.PI);
+    function introProgress() { return ease(clamp01(introT / AUTO_S)); }
+    function seekTo(p) {
+      p = clamp01(p);
+      let lo = 0, hi = 1;
+      for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; if (ease(mid) < p) lo = mid; else hi = mid; }
+      introT = AUTO_S * (p >= 1 ? 1 : lo); forceFrame = true;
+    }
     // Tope de 30 cuadros/s con la escena 3D en pantallas angostas (< 900 px) o si el equipo no sostiene 50 cuadros/s.
     // El cuadro saltado no mueve el reloj: el siguiente avanza todo el tiempo real, así el movimiento va a la misma velocidad.
     // En escritorio se mide el ritmo en tandas de 60 cuadros (sin contar construcciones ni la vuelta de una pestaña oculta);

@@ -1,3 +1,4 @@
 .vercel
 tools/salida/
 __pycache__/
+.impeccable/
