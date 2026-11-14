@@ -732,14 +732,17 @@
       });
       introStatus(on, spots.length);
     }
+    // Solo se escribe lo que cambió: reescribir el mismo valor obliga al navegador a recalcular estilos y diseño
+    const statusShown = [];
+    function statusOnce(i, v, f) { if (statusShown[i] !== v) { statusShown[i] = v; f(v); } }
     function introStatus(on, total) {
-      countEl.textContent = `${on} de ${total} áreas`;
+      statusOnce(0, `${on} de ${total} áreas`, v => { countEl.textContent = v; });
       const lit = on === total;
-      intro.dataset.lit = String(lit);
-      intro.dataset.done = String(progress > 0.05);
+      statusOnce(1, String(lit), v => { intro.dataset.lit = v; });
+      statusOnce(2, String(progress > 0.05), v => { intro.dataset.done = v; });
       const stage = progress < 0.12 ? 0 : lit ? 2 : 1;
-      stepEl.dataset.stage = String(stage);
-      railFill.style.transform = `scaleX(${Math.max(0.02, Math.min(1, progress / 0.95))})`;
+      statusOnce(3, String(stage), v => { stepEl.dataset.stage = v; });
+      statusOnce(4, `scaleX(${Math.max(0.02, Math.min(1, progress / 0.95))})`, v => { railFill.style.transform = v; });
     }
 
     function introProgress() {
@@ -2842,9 +2845,11 @@
         v3.copy(p).project(camera);
         let x = (v3.x + 1) / 2 * W;
         if (W < 600 && el !== hub) x = Math.min(Math.max(x, 20), W - 20);
-        el.style.left = x + 'px';
-        el.style.top = (1 - v3.y) / 2 * H + 'px';
-        el.style.visibility = v3.z > 1 ? 'hidden' : '';
+        // Solo se escribe lo que cambió (la cámara queda quieta largos ratos)
+        const c = el._at || (el._at = ['', '', null]), l = x + 'px', t = (1 - v3.y) / 2 * H + 'px', vis = v3.z > 1 ? 'hidden' : '';
+        if (c[0] !== l) el.style.left = c[0] = l;
+        if (c[1] !== t) el.style.top = c[1] = t;
+        if (c[2] !== vis) el.style.visibility = c[2] = vis;
       }
       function flash() {
         kick = 1;
@@ -3245,10 +3250,12 @@
 
     let forceFrame = false;
     const clockEl = document.getElementById("intro-clock");
-    let lastMinute = -1;
+    let lastMinute = -1, lastSky = '';
     const clockHand = document.getElementById("clock-hand"), clockTime = document.getElementById("clock-time"), clockShift = document.getElementById("clock-shift");
     S3 = create3D(() => { forceFrame = true; }, (h, day, sky, top) => {
-      intro.style.background = `linear-gradient(to bottom, #${top.getHexString()} 0%, #${sky.getHexString()} 42%, #020812 100%)`;
+      // El degradado del cielo solo se reescribe si cambió: cada escritura repinta todo el fondo de la portada
+      const skyBg = `linear-gradient(to bottom, #${top.getHexString()} 0%, #${sky.getHexString()} 42%, #020812 100%)`;
+      if (skyBg !== lastSky) intro.style.background = lastSky = skyBg;
       clockHand.setAttribute("transform", `rotate(${(h / 24) * 360} 32 32)`);
       const minute = Math.floor(h * 60);
       if (minute === lastMinute) return;
