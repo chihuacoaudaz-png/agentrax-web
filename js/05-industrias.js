@@ -31,7 +31,7 @@
     const list = document.createElement('div'); list.className = 'indc__list';
     IND.forEach((d, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = d.name; b.addEventListener('click', () => { stop(); show(i); }); list.appendChild(b); d.btn = b; });
     info.before(list);
-    let cur = 0, targetRot = 0, rot = 0, auto = !still, timer = 0, visible = false, raf = 0, last = 0, time = 0;
+    let cur = 0, targetRot = 0, rot = 0, auto = !still, timer = 0, visible = false, raf = 0, last = 0, time = 0, dirty = false;
     let frame = null, paint = null;   // existen cuando la escena ya se creó
     function show(i) {
       cur = i;
@@ -47,8 +47,18 @@
       if (paint) paint();
       kick();
     }
-    const stop = () => { auto = false; clearInterval(timer); };
-    function kick() { if (frame && !raf) { last = 0; raf = requestAnimationFrame(frame); } }
+    const stop = () => { auto = false; clearInterval(timer); timer = 0; };
+    function kick() {
+      if (!frame || raf) return;
+      if (document.hidden) { dirty = true; return; }
+      dirty = false; last = 0; raf = requestAnimationFrame(frame);
+    }
+    function sync() {
+      clearInterval(timer); timer = 0;
+      if (visible && auto && !document.hidden) timer = setInterval(() => show((cur + 1) % IND.length), 4200);
+      if (document.hidden) { if (raf) { cancelAnimationFrame(raf); raf = 0; dirty = true; } }
+      else if (visible || dirty) kick();
+    }
 
     // La escena (y su contexto WebGL) se crea solo cuando la sección está a una pantalla o menos
     function init() {
@@ -320,6 +330,18 @@
         parent.add(f);
         return { f, ranges, col: geo.attributes.color };
       }
+      // Libera geometrías y materiales retirados que no sigan en uso en la escena
+      function disposeUnused(objs) {
+        const used = new Set();
+        scene.traverse(x => {
+          if (x.geometry) used.add(x.geometry);
+          if (x.material) used.add(x.material);
+        });
+        objs.forEach(o => {
+          if (o.geometry && !used.has(o.geometry)) { used.add(o.geometry); o.geometry.dispose(); }
+          if (o.material && !used.has(o.material)) { used.add(o.material); o.material.dispose(); }
+        });
+      }
       // Piezas fijas dentro de un ancla: se unen en su marco y salen de la escena (sus hijos sueltos pasan al ancla)
       function fuseLocal(a, objs) {
         a.updateMatrixWorld(true);
@@ -327,6 +349,7 @@
         objs.forEach(o => { const key = sig(o, o.material); if (!gs.has(key)) gs.set(key, []); gs.get(key).push({ o, mx: rel(o, a) }); });
         gs.forEach(list => { if (list.length > 1) { build(list, a, false, false); list.forEach(({ o }) => gone.add(o)); } });
         gone.forEach(o => { o.children.slice().forEach(ch => { if (!gone.has(ch)) a.attach(ch); }); o.parent.remove(o); });
+        disposeUnused(gone);
       }
       world.updateMatrixWorld(true);
       // Plataformas: lo fijo de las 8 en un objeto por material. Los originales pasan a la capa 1: no se dibujan,
@@ -362,7 +385,7 @@
       const fixed = []; podium.children.forEach(m => { if (m.material === tierMat || (m.isMesh && pillars.indexOf(m) < 0 && bands.indexOf(m) < 0 && m.geometry.type === 'BoxGeometry')) { fixed.push(m); m.children.forEach(e => fixed.push(e)); } });
       fuseLocal(podium, fixed);
       // Piezas con un valor propio por cuadro o por selección: juntas, con su color RGBA por vértice
-      const fuseOut = (objs, a) => { a.updateMatrixWorld(true); const F = build(objs.map(o => ({ o, mx: rel(o, a) })), a, false, false); objs.forEach(o => o.parent.remove(o)); return F; };
+      const fuseOut = (objs, a) => { a.updateMatrixWorld(true); const F = build(objs.map(o => ({ o, mx: rel(o, a) })), a, false, false); objs.forEach(o => o.parent.remove(o)); disposeUnused(objs); return F; };
       const tubeF = fuseOut(beams.map(b => b.tube), world);
       const bandF = fuseOut(bands, podium);
       const tipF = fuseOut(pillars, podium);
@@ -399,6 +422,7 @@
       }
       const v = new T.Vector3();
       frame = function frame(now) {
+        if (document.hidden) { raf = 0; dirty = true; return; }
         const dt = last ? Math.min(0.05, (now - last) / 1000) : 0; last = now; time += dt;
         rot += (targetRot - rot) * (still ? 1 : 0.06);
         world.rotation.y = rot;
@@ -432,7 +456,7 @@
         pulsePos.needsUpdate = true; pulseCol.needsUpdate = true;
         v.set(0, orb.position.y + 2.5, 0); v.project(camera); coreLbl.style.left = `${(v.x + 1) / 2 * W}px`; coreLbl.style.top = `${(1 - v.y) / 2 * H}px`;
         renderer.render(scene, camera);
-        raf = visible && !still ? requestAnimationFrame(frame) : 0;
+        raf = visible && !still && !document.hidden ? requestAnimationFrame(frame) : 0;
       };
       size();
       window.addEventListener('resize', () => { size(); kick(); });
@@ -444,9 +468,8 @@
     near.observe(box);
     new IntersectionObserver(es => {
       visible = es.some(e => e.isIntersecting);
-      clearInterval(timer);
-      if (visible && auto) timer = setInterval(() => show((cur + 1) % IND.length), 4200);
-      kick();
+      sync();
     }, { threshold: 0.2 }).observe(box);
+    document.addEventListener('visibilitychange', sync);
     show(0);
   })();
