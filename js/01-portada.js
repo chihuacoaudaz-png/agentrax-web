@@ -752,17 +752,25 @@
     // El cuadro saltado no mueve el reloj: el siguiente avanza todo el tiempo real, así el movimiento va a la misma velocidad.
     // En escritorio se mide el ritmo en tandas de 60 cuadros (sin contar construcciones ni la vuelta de una pestaña oculta);
     // dos tandas seguidas por debajo de 50 cuadros/s fijan el tope
-    let capped = false, capN = 0, capSum = 0, capSlow = 0, capDue = 0;
+    let capped = false, capN = 0, capSum = 0, capSlow = 0, capDue = 0, lastTick = 0, vsync = 1e9, drew = false, jsCost = 0;
     function introLoop(now) {
       requestAnimationFrame(introLoop);
       if (!introVisible || document.hidden) return;
       const moving = !paused && !reduceMotion;
+      // Muestra de la resolución adaptativa, una por cuadro dibujado: lo que tardó su programa o, si el navegador
+      // se atrasó en volver (la tarjeta gráfica no da abasto), ese atraso descontando un periodo de pantalla
+      const tick = now - lastTick;
+      lastTick = now;
+      if (tick >= 4 && tick < vsync) vsync = tick;
+      // Si la resolución cambió, este cuadro se dibuja sí o sí: el lienzo recién redimensionado queda en blanco
+      let resized = false;
+      if (drew) { drew = false; if (S3 && moving) resized = S3.adapt(tick > 0 && tick < 200 ? Math.max(jsCost, tick - vsync) : NaN); }
       const gap = now - lastIntro;
       if (S3 && moving && gap > 0) {
         const narrow = IW < 900;
         if (capped || narrow) {
           // Cada cuadro tiene su turno cada 1/30 s (con 4 ms de holgura por el vaivén del navegador)
-          if (now < capDue - 4) return;
+          if (now < capDue - 4 && !resized) return;
           capDue = (now - capDue > 33.4 ? now : capDue) + 33.4;
         }
         if (!capped && !narrow) {
@@ -779,7 +787,11 @@
       if (moving) introClock += Math.min(0.05, (now - lastIntro) / 1000 || 0);
       lastIntro = now;
       progress = p;
+      if (!S3 || !moving) { introFrame(now); return; }
+      const t0 = performance.now();
       introFrame(now);
+      jsCost = performance.now() - t0;
+      drew = true;
     }
 
     /* Tipo de mina */
@@ -2785,6 +2797,30 @@
         new Set(old).forEach(x => { if (!used.has(x)) x.dispose(); });
       }
 
+      /* Resolución adaptativa: si el promedio de 30 cuadros dibujados pasa de 28 ms, la resolución interna baja
+         en pasos de 0,25 hasta 1,0, nunca por encima del tope de siempre. Tras cada cambio se descarta una tanda (el
+         cambio cuesta); solo vuelve a subir tras 8 tandas seguidas bajo 18 ms, y un nivel del que tuvo que bajar después
+         de subir queda vetado: así no parpadea. No actúa con reducir movimiento ni con el reloj fijo (no recibe muestras) */
+      const DPR_MAX = Math.min(window.devicePixelRatio || 1, 1.5), dprVeto = new Set(), dprUp = new Set();
+      let dpr = DPR_MAX, adN = 0, adSum = 0, adSkip = 0, adFast = 0;
+      function adapt(ms) {
+        if (building || !(ms >= 0)) { adN = adSum = 0; return false; }
+        if (adSkip > 0) { adSkip--; return false; }
+        adSum += ms;
+        if (++adN < 30) return false;
+        const avg = adSum / adN;
+        adN = adSum = 0;
+        let next = dpr;
+        if (avg > 28 && dpr > 1) { next = Math.max(1, dpr - 0.25); if (dprUp.has(dpr)) dprVeto.add(dpr); adFast = 0; }
+        else if (avg < 18 && dpr < DPR_MAX) {
+          const up = Math.min(DPR_MAX, dpr + 0.25);
+          if (++adFast >= 8 && !dprVeto.has(up)) { next = up; dprUp.add(up); adFast = 0; }
+        } else adFast = 0;
+        if (next === dpr) return false;
+        dpr = next; adSkip = 30;
+        renderer.setPixelRatio(dpr);
+        return true;
+      }
       function resize() {
         const r = stage.getBoundingClientRect();
         W = r.width; H = r.height;
@@ -3204,7 +3240,7 @@
       const endDrag = () => { drag = null; stage.classList.remove("is-dragging"); };
       window.addEventListener("pointerup", endDrag);
       window.addEventListener("pointercancel", endDrag);
-      return { build, resize, render, busy: () => building };
+      return { build, resize, render, adapt, busy: () => building };
     }
 
     let forceFrame = false;
