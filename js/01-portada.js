@@ -427,6 +427,7 @@
     const spotsEl = document.getElementById('intro-spots');
     const stepEl = document.getElementById('intro-step');
     const railFill = document.getElementById('rail-fill');
+    const railKnob = document.getElementById('rail-knob');
     const countEl = document.getElementById('intro-count');
     const bg = document.createElement('canvas');
     const bctx = bg.getContext('2d');
@@ -746,7 +747,7 @@
       statusOnce(2, String(progress > 0.05), v => { intro.dataset.done = v; });
       const stage = progress < 0.12 ? 0 : lit ? 2 : 1;
       statusOnce(3, String(stage), v => { stepEl.dataset.stage = v; });
-      statusOnce(4, `scaleX(${Math.max(0.02, Math.min(1, progress / 0.95))})`, v => { railFill.style.transform = v; });
+      statusOnce(4, String(Math.max(0.02, Math.min(1, progress / 0.95))), v => { railFill.style.transform = `scaleX(${v})`; railKnob.style.transform = `translateX(${v * 100}%)`; });
       statusOnce(5, String(Math.round(progress * 100)), v => { railTrack.setAttribute('aria-valuenow', v); });
       statusOnce(6, `${RAIL_NAMES[stage]} · ${on} de ${total} áreas`, v => { railTrack.setAttribute('aria-valuetext', v); });
       statusOnce(7, introT >= AUTO_S ? 'end' : introHold ? 'held' : 'play', v => {
@@ -845,19 +846,27 @@
     railTrack.addEventListener('pointerdown', e => {
       if (e.button > 0) return;
       e.stopPropagation();   // no gira el mapa
-      seeking = true; seekX(e.clientX);
+      seeking = true; railTrack.classList.add('is-seeking'); seekX(e.clientX);
       try { railTrack.setPointerCapture(e.pointerId); } catch (err) { /* evento sintético */ }
     });
     window.addEventListener('pointermove', e => { if (seeking) seekX(e.clientX); });
-    const endSeek = () => { if (seeking) { seeking = false; forceFrame = true; } };
+    const endSeek = () => { if (seeking) { seeking = false; railTrack.classList.remove('is-seeking'); forceFrame = true; } };
     window.addEventListener('pointerup', endSeek);
     window.addEventListener('pointercancel', endSeek);
+    // Si la ventana pierde el foco o el riel pierde la captura a mitad del arrastre, el arrastre termina (no queda pegado)
+    window.addEventListener('blur', endSeek);
+    railTrack.addEventListener('lostpointercapture', endSeek);
     function togglePlay() {
       if (introT >= AUTO_S) { introT = 0; introHold = false; } else introHold = !introHold;
       forceFrame = true;
     }
     railPlay.addEventListener('click', togglePlay);
     if (reduceMotion) railPlay.hidden = true;
+    // Al llegar con el teclado, el avance se pausa (como un carrusel): el valor no cambia solo bajo el foco
+    // y el lector de pantalla no lo anuncia sin parar. Se reanuda con Espacio o con el botón
+    railTrack.addEventListener('focus', () => {
+      if (!reduceMotion && introT < AUTO_S && !introHold && railTrack.matches(':focus-visible')) { introHold = true; forceFrame = true; }
+    });
     railTrack.addEventListener('keydown', e => {
       const step = { ArrowRight: 0.05, ArrowUp: 0.05, ArrowLeft: -0.05, ArrowDown: -0.05, PageUp: 0.2, PageDown: -0.2 }[e.key];
       if (step) seekTo(progress + step);

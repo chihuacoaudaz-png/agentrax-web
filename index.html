@@ -178,8 +178,15 @@
     .rail li button { display: inherit; gap: inherit; align-items: inherit; min-height: 24px; padding: 2px 0; margin: 0; background: none; border: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; touch-action: manipulation; }
     @media (hover: hover) { .rail li button:hover { color: #fff; } }
     .rail__ctl { display: flex; align-items: center; gap: 12px; }
-    .rail__track { flex: 1; min-width: 0; height: 24px; display: flex; align-items: center; cursor: pointer; touch-action: pan-y; }
-    .rail__track .rail__bar { flex: 1; }
+    .rail__track { position: relative; flex: 1; min-width: 0; height: 24px; display: flex; align-items: center; cursor: grab; touch-action: pan-y; }
+    .rail__track.is-seeking { cursor: grabbing; }
+    .rail__track .rail__bar { flex: 1; transition: transform 150ms ease; }
+    /* Indicio de que el riel se arrastra: un punto al final del relleno, que crece al pasar el cursor, al enfocar o al arrastrar */
+    .rail__knob { position: absolute; inset: 0; pointer-events: none; transform: translateX(2%); transition: transform 120ms linear; }
+    .rail__knob::before { content: ""; position: absolute; left: -4px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18); transition: transform 150ms var(--ease-out); }
+    .rail__track:focus-visible .rail__knob::before, .rail__track.is-seeking .rail__knob::before { transform: scale(1.4); }
+    .rail__track:focus-visible .rail__bar, .rail__track.is-seeking .rail__bar { transform: scaleY(1.5); }
+    @media (hover: hover) { .rail__track:hover .rail__knob::before { transform: scale(1.4); } .rail__track:hover .rail__bar { transform: scaleY(1.5); } }
     .rail__play { flex: none; width: 24px; height: 24px; display: grid; place-items: center; padding: 0; background: none; border: 1px solid rgba(159, 176, 200, 0.35); border-radius: 50%; color: var(--on-navy-2); cursor: pointer; touch-action: manipulation; transition: color 150ms ease, border-color 150ms ease; }
     .rail__play[hidden] { display: none; }
     .rail__play svg { width: 9px; height: 9px; fill: currentColor; }
@@ -256,6 +263,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       .intro__hint { display: none; }
+      .rail__bar i, .rail__bar, .rail__knob, .rail__knob::before { transition: none; }
     }
     @media (max-width: 900px) {
       /* Bajo el reloj 24/7 (76 px de alto desde 18 px): la etapa visible es un botón y no debe quedar tapada */
@@ -1681,7 +1689,7 @@
             <li data-k="2"><button type="button" data-seek="2"><b>03</b>Una sola torre de control</button></li>
           </ol>
           <div class="rail__ctl">
-            <div class="rail__track" id="rail-track" role="slider" tabindex="0" aria-label="Avance de la conexión de áreas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="rail__bar"><i id="rail-fill"></i></div></div>
+            <div class="rail__track" id="rail-track" role="slider" tabindex="0" aria-label="Avance de la conexión de áreas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="rail__bar"><i id="rail-fill"></i></div><span class="rail__knob" id="rail-knob" aria-hidden="true"></span></div>
             <button type="button" class="rail__play" id="rail-play" data-state="play" aria-label="Pausar el avance"><svg viewBox="0 0 10 10" aria-hidden="true"><path class="rail__pause" d="M2 1.5h2v7H2zM6 1.5h2v7H6z"/><path class="rail__go" d="M2.5 1.2 9 5l-6.5 3.8z"/></svg></button>
           </div>
           <p class="rail__note">Datos de ejemplo<span class="rail__drag"> · Arrastre para girar el mapa</span></p>
