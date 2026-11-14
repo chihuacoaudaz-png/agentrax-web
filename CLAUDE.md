@@ -19,6 +19,7 @@ Sitio estático en HTML + CSS + JavaScript, **sin framework ni paso de compilaci
 - `css/legal.css` — Hoja compartida por `privacy.html`, `terms.html` y `404.html` (sin Tailwind por CDN; **no modificar los textos legales**).
 - `datos/` — `datos/countries-110m.json`. En la raíz vive `peru-regiones.json` (ambos consumidos por `js/02-mapa.js`).
 - `equipo/` — Fotos WebP de 1254×1254 (`renato.webp`, `cesar.webp`, `erick.webp`) y sus versiones para celular (`*-660.webp`) vía `srcset` y `sizes`. Si reemplazas una foto, regenera también su `-660.webp`.
+- Favicons (raíz): `favicon.ico` (16/32/48), `favicon-32.png`, `favicon-192.png`, `apple-touch-icon.png` (180, fondo sólido) e `icon-512.png` (también `logo` del JSON-LD). Se generan desde `brand-app-icon.png` con `python tools/favicons.py --hoja <png>` (recorta el cuadro oscuro sin el marco gris; a 16–32 px, recorte más cerrado del emblema). Caché de 1 día en `vercel.json`.
 - Raíz pública adicional: `brand-app-icon.png`, `brand-emblem-dark.png`, `brand-logo-dark.png`, `og-agentrax.jpg`, `robots.txt`, `sitemap.xml`, `CNAME`, `vercel.json`.
 - `.vercelignore`, `docs/`, `tools/` — `.vercelignore` excluye `tools/`, `docs/`, `*.md` y `*.py` del despliegue en Vercel.
 
@@ -44,6 +45,8 @@ Sitio estático en HTML + CSS + JavaScript, **sin framework ni paso de compilaci
    - **Resolución adaptativa (`adapt`):** inicia en `min(devicePixelRatio || 1, 1.5)`. Si 30 cuadros dibujados promedian `> 28 ms`, baja `0,25` (hasta `1,0`); sube tras 8 tandas seguidas `< 18 ms` y veta niveles desde los que volvió a bajar (`dprVeto`).
    - **DOM mínimo:** `statusOnce` y `place()` (`el._at`) solo escriben en el DOM si el valor cambió.
    - **Fusión y reducciones de draw calls (≤ 120):** `mergeGeo()` y `fuse(id)` unen geometrías estáticas por material equivalente (`matKey`) o con color RGBA por vértice; `cards()` agrupa sprites fijos (`ShaderMaterial`); `beacons()` fusiona `stem` e instancia `pad`/`gem`/`packets`/`orbit`; `herd()` instancia equipos/mineral opacos y `flocks()` agrupa sprites aditivos dinámicos (dejando originales en `layers.set(1)`).
+   - **Portada de 1 pantalla con avance automático:** arranca sola al tener la escena lista y recorre las etapas en `AUTO_S = 24` s con curva pareja (`ease`, más lenta al medio, donde se conectan las 10 áreas); con «reducir movimiento» queda en el final. La barra `.intro__rail` es el control: `#rail-track` (slider con arrastre, toque y teclado) y `#rail-play` (pausa / reanudar / repetir, `data-state` = `play` · `held` · `end`).
+   - **Terreno con detalle no uniforme:** `terrain(fn, w, d, cz, low, seg, fade, core)` densifica solo el rectángulo `core` (donde se mira) y aligera el resto.
    - **Qué NO romper:** crea piezas estáticas dentro de `world` antes de `fuse(id)`; registra en `live` o `skip` toda pieza que cambie luego de `build()`; no mezcles transparentes en el origen con ubicadas ni cruces lados del vidrio en `sub`.
 
 4. **Industrias 3D (`js/05-industrias.js`) y Orbe AITI (`js/06-aiti.js`)**
@@ -52,7 +55,7 @@ Sitio estático en HTML + CSS + JavaScript, **sin framework ni paso de compilaci
 
 5. **Reglas de caché (`vercel.json`)**
    - `/js/vendor/(.*)` y `/datos/(.*)` → **`public, max-age=31536000, immutable` (1 año)**. Si actualizas una librería o archivo de datos, **cambia el nombre del archivo y su referencia**.
-   - `/equipo/(.*)` y `/(brand-.*\.png)` → **`public, max-age=86400` (1 día)** (nombres fijos).
+   - `/equipo/(.*)` y `/(brand-.*\.png|favicon.*|apple-touch-icon\.png|icon-512\.png)` → **`public, max-age=86400` (1 día)** (nombres fijos).
    - `/js/((?!vendor/).*)` → **`public, max-age=0, must-revalidate`** (siempre se revalida: un cambio de JS llega de inmediato). Conserva `(?!vendor/)` para no pisar la regla de 1 año.
 
 ---
