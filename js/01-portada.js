@@ -1652,7 +1652,7 @@
             'Almacén': new T.Vector3(40, 7, 18),
             'Recursos humanos': new T.Vector3(76, 4, 38),
             'Ingeniería': new T.Vector3(70, 13, 16),
-            'Proyectos': new T.Vector3(100, 4, -12)
+            'Proyectos': new T.Vector3(100, 4, -55)
           },
           core: new T.Vector3(-14, 76, 2), target: new T.Vector3(-16, 12, 0), elev: [0.3, 0.62], az: [-0.6, -0.12], dist: 375
         };
