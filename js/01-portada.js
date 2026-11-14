@@ -748,11 +748,32 @@
       const span = intro.offsetHeight - (window.innerHeight - 60);
       return clamp01((60 - r.top) / Math.max(1, span) * 1.15);
     }
+    // Tope de 30 cuadros/s con la escena 3D en pantallas angostas (< 900 px) o si el equipo no sostiene 50 cuadros/s.
+    // El cuadro saltado no mueve el reloj: el siguiente avanza todo el tiempo real, así el movimiento va a la misma velocidad.
+    // En escritorio se mide el ritmo en tandas de 60 cuadros (sin contar construcciones ni la vuelta de una pestaña oculta);
+    // dos tandas seguidas por debajo de 50 cuadros/s fijan el tope
+    let capped = false, capN = 0, capSum = 0, capSlow = 0, capDue = 0;
     function introLoop(now) {
       requestAnimationFrame(introLoop);
       if (!introVisible || document.hidden) return;
-      const p = introProgress();
       const moving = !paused && !reduceMotion;
+      const gap = now - lastIntro;
+      if (S3 && moving && gap > 0) {
+        const narrow = IW < 900;
+        if (capped || narrow) {
+          // Cada cuadro tiene su turno cada 1/30 s (con 4 ms de holgura por el vaivén del navegador)
+          if (now < capDue - 4) return;
+          capDue = (now - capDue > 33.4 ? now : capDue) + 33.4;
+        }
+        if (!capped && !narrow) {
+          if (gap >= 200 || S3.busy()) capN = capSum = 0;
+          else if (++capN > 10) {
+            capSum += gap;
+            if (capN === 70) { capSlow = capSum / 60 > 20 ? capSlow + 1 : 0; capped = capSlow >= 2; capN = capSum = 0; }
+          }
+        }
+      }
+      const p = introProgress();
       if (!moving && p === progress && !forceFrame) { lastIntro = now; return; }
       forceFrame = false;
       if (moving) introClock += Math.min(0.05, (now - lastIntro) / 1000 || 0);
@@ -3183,7 +3204,7 @@
       const endDrag = () => { drag = null; stage.classList.remove("is-dragging"); };
       window.addEventListener("pointerup", endDrag);
       window.addEventListener("pointercancel", endDrag);
-      return { build, resize, render };
+      return { build, resize, render, busy: () => building };
     }
 
     let forceFrame = false;
