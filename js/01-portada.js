@@ -433,6 +433,10 @@
     let mineId = 'tajo', spotEls = [], routes = [], S3 = null;
     let IW = 0, IH = 0, box = { x0: 0, x1: 1, y0: 0, y1: 1 };
     let progress = reduceMotion ? 1 : 0, introVisible = true, introClock = 0, lastIntro = 0;
+    // Avance automático: introT recorre 0 → AUTO_S segundos y el avance sale de una curva suave (progress = ease(introT / AUTO_S)).
+    // Corre solo con la portada en pantalla, la pestaña visible y la escena lista (sceneReady); la barra lo controla
+    const AUTO_S = 9;
+    let introT = reduceMotion ? AUTO_S : 0, introHold = false, seeking = false, sceneReady = false;
     const STEPS = [
       '<b>01</b><span>Cada área trabaja por su lado</span>',
       '<b>02</b><span>Conectando cada área</span>',
@@ -743,14 +747,17 @@
       const stage = progress < 0.12 ? 0 : lit ? 2 : 1;
       statusOnce(3, String(stage), v => { stepEl.dataset.stage = v; });
       statusOnce(4, `scaleX(${Math.max(0.02, Math.min(1, progress / 0.95))})`, v => { railFill.style.transform = v; });
+      statusOnce(5, String(Math.round(progress * 100)), v => { railTrack.setAttribute('aria-valuenow', v); });
+      statusOnce(6, `${RAIL_NAMES[stage]} · ${on} de ${total} áreas`, v => { railTrack.setAttribute('aria-valuetext', v); });
+      statusOnce(7, introT >= AUTO_S ? 'end' : introHold ? 'held' : 'play', v => {
+        railPlay.dataset.state = v;
+        railPlay.setAttribute('aria-label', v === 'end' ? 'Repetir la conexión' : v === 'held' ? 'Reanudar el avance' : 'Pausar el avance');
+      });
     }
 
-    function introProgress() {
-      if (reduceMotion) return 1;
-      const r = intro.getBoundingClientRect();
-      const span = intro.offsetHeight - (window.innerHeight - 60);
-      return clamp01((60 - r.top) / Math.max(1, span) * 1.15);
-    }
+    // Curva suave (seno): arranca y termina despacio; su inversa permite saltar a un avance desde la barra
+    function introProgress() { return 0.5 - 0.5 * Math.cos(Math.PI * introT / AUTO_S); }
+    function seekTo(p) { introT = AUTO_S * Math.acos(1 - 2 * clamp01(p)) / Math.PI; forceFrame = true; }
     // Tope de 30 cuadros/s con la escena 3D en pantallas angostas (< 900 px) o si el equipo no sostiene 50 cuadros/s.
     // El cuadro saltado no mueve el reloj: el siguiente avanza todo el tiempo real, así el movimiento va a la misma velocidad.
     // En escritorio se mide el ritmo en tandas de 60 cuadros (sin contar construcciones ni la vuelta de una pestaña oculta);
@@ -784,6 +791,10 @@
           }
         }
       }
+      // El avance automático usa el mismo tiempo real que introClock (tope de 50 ms: al volver de una pestaña oculta no salta)
+      if (moving && sceneReady && !introHold && !seeking && introT < AUTO_S) {
+        introT = Math.min(AUTO_S, introT + Math.min(0.05, (now - lastIntro) / 1000 || 0));
+      }
       const p = introProgress();
       if (!moving && p === progress && !forceFrame) { lastIntro = now; return; }
       forceFrame = false;
@@ -803,7 +814,12 @@
       if (id === mineId && spotEls.length) return;
       mineTabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.mine === id)));
       // Con la escena 3D, el desvanecido termina cuando la mina nueva está construida (built3D)
-      const swap = () => { mineId = id; buildSpots(); introLayout(); if (!S3) intro.classList.remove('is-swapping'); };
+      // La animación vuelve a empezar sola desde el inicio con la mina nueva (con la escena 3D, cuando esté construida)
+      sceneReady = !S3;
+      const swap = () => {
+        introT = reduceMotion ? AUTO_S : 0; introHold = false; forceFrame = true;
+        mineId = id; buildSpots(); introLayout(); if (!S3) intro.classList.remove('is-swapping');
+      };
       if (!spotEls.length || reduceMotion) { swap(); return; }
       intro.classList.add('is-swapping');
       setTimeout(swap, 200);
@@ -813,6 +829,43 @@
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       const next = mineTabs.find(t => t.getAttribute('aria-selected') === 'false');
       next.focus(); setMine(next.dataset.mine);
+    });
+
+    /* Barra de etapas: tocar una etapa, arrastrar, teclado y pausa del avance */
+    const RAIL_NAMES = ['Etapa 1 de 3: cada área trabaja por su lado', 'Etapa 2 de 3: conectando cada área', 'Etapa 3 de 3: una sola torre de control'];
+    const RAIL_AT = [0, 0.12, 1];
+    const railTrack = document.getElementById('rail-track');
+    const railPlay = document.getElementById('rail-play');
+    stepEl.querySelectorAll('[data-seek]').forEach(b => b.addEventListener('click', () => seekTo(RAIL_AT[+b.dataset.seek])));
+    // El relleno llega al final con progress = 0,95: el dedo y el relleno van juntos
+    function seekX(x) {
+      const r = railTrack.getBoundingClientRect(), f = clamp01((x - r.left) / Math.max(1, r.width));
+      seekTo(f > 0.98 ? 1 : f * 0.95);
+    }
+    railTrack.addEventListener('pointerdown', e => {
+      if (e.button > 0) return;
+      e.stopPropagation();   // no gira el mapa
+      seeking = true; seekX(e.clientX);
+      try { railTrack.setPointerCapture(e.pointerId); } catch (err) { /* evento sintético */ }
+    });
+    window.addEventListener('pointermove', e => { if (seeking) seekX(e.clientX); });
+    const endSeek = () => { if (seeking) { seeking = false; forceFrame = true; } };
+    window.addEventListener('pointerup', endSeek);
+    window.addEventListener('pointercancel', endSeek);
+    function togglePlay() {
+      if (introT >= AUTO_S) { introT = 0; introHold = false; } else introHold = !introHold;
+      forceFrame = true;
+    }
+    railPlay.addEventListener('click', togglePlay);
+    if (reduceMotion) railPlay.hidden = true;
+    railTrack.addEventListener('keydown', e => {
+      const step = { ArrowRight: 0.05, ArrowUp: 0.05, ArrowLeft: -0.05, ArrowDown: -0.05, PageUp: 0.2, PageDown: -0.2 }[e.key];
+      if (step) seekTo(progress + step);
+      else if (e.key === 'Home') seekTo(0);
+      else if (e.key === 'End') seekTo(1);
+      else if ((e.key === ' ' || e.key === 'Enter') && !reduceMotion) togglePlay();
+      else return;
+      e.preventDefault();
     });
 
     new IntersectionObserver(es => { introVisible = es[0].isIntersecting; }).observe(intro);
@@ -3267,7 +3320,8 @@
       clockEl.classList.toggle("is-night", !dayShift);
     });
     // La escena se construye por partes tras el primer pintado: hasta entonces se ve el fondo, y aparece con el desvanecido de siempre
-    function built3D() { introFrame(); intro.classList.remove('is-swapping'); hub.style.opacity = ''; }
+    function built3D() { sceneReady = true; introFrame(); intro.classList.remove('is-swapping'); hub.style.opacity = ''; }
+    sceneReady = !S3;   // sin WebGL el avance arranca de inmediato
     if (S3) { intro.classList.add('is-swapping'); hub.style.opacity = '0'; }
     buildSpots();
     introLayout();

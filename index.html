@@ -167,14 +167,25 @@
     @media (hover: hover) { .intro__link:hover { color: #fff; background-size: 0 1px; } }
     .intro__actions { flex-direction: row; align-items: center; gap: 22px; }
     .intro__rail { position: absolute; z-index: 3; left: calc(var(--gutter) + min(27vw, 420px) + 48px); right: var(--gutter); bottom: clamp(24px, 5vh, 52px); }
-    .rail { list-style: none; margin: 0 0 10px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .rail { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
     .rail li { display: flex; gap: 8px; align-items: baseline; font-size: 14px; color: rgba(159, 176, 200, 0.55); transition: color 300ms ease; }
     .rail li b { font: 500 12px var(--f-data); color: inherit; }
+    /* La barra es el control del avance: etapas que se tocan, riel que se arrastra y pausa (zonas de 24 px o más) */
+    .rail li button { display: inherit; gap: inherit; align-items: inherit; min-height: 24px; padding: 2px 0; margin: 0; background: none; border: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; touch-action: manipulation; }
+    @media (hover: hover) { .rail li button:hover { color: #fff; } }
+    .rail__ctl { display: flex; align-items: center; gap: 12px; }
+    .rail__track { flex: 1; min-width: 0; height: 24px; display: flex; align-items: center; cursor: pointer; touch-action: pan-y; }
+    .rail__track .rail__bar { flex: 1; }
+    .rail__play { flex: none; width: 24px; height: 24px; display: grid; place-items: center; padding: 0; background: none; border: 1px solid rgba(159, 176, 200, 0.35); border-radius: 50%; color: var(--on-navy-2); cursor: pointer; touch-action: manipulation; transition: color 150ms ease, border-color 150ms ease; }
+    .rail__play[hidden] { display: none; }
+    .rail__play svg { width: 9px; height: 9px; fill: currentColor; }
+    .rail__play[data-state="play"] .rail__go, .rail__play:not([data-state="play"]) .rail__pause { display: none; }
+    @media (hover: hover) { .rail__play:hover { color: #fff; border-color: var(--on-navy-2); } }
     .intro__rail[data-stage="0"] li[data-k="0"], .intro__rail[data-stage="1"] li[data-k="1"], .intro__rail[data-stage="2"] li[data-k="2"] { color: #fff; }
     .intro__rail[data-stage="1"] li[data-k="0"], .intro__rail[data-stage="2"] li[data-k="0"], .intro__rail[data-stage="2"] li[data-k="1"] { color: var(--cyan); }
     .rail__bar { height: 2px; background: rgba(159, 176, 200, 0.2); border-radius: 1px; overflow: hidden; }
     .rail__bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--flow), var(--cyan)); transform-origin: left; transform: scaleX(0.02); transition: transform 120ms linear; }
-    .rail__note { margin: 10px 0 0; font: 400 12px var(--f-data); color: rgba(159, 176, 200, 0.6); text-align: right; }
+    .rail__note { margin: 0; font: 400 12px var(--f-data); color: rgba(159, 176, 200, 0.6); text-align: right; }
     /* Áreas solo con su ícono; el nombre aparece al pasar el cursor o tocar */
     .intro.is-3d .spot__name { opacity: 0; transform: translateX(-4px); transition: opacity 160ms ease, transform 160ms var(--ease-out); pointer-events: none; }
     .intro.is-3d .spot--right .spot__name { transform: translateX(4px); }
@@ -243,9 +254,10 @@
       .intro__hint { display: none; }
     }
     @media (max-width: 900px) {
-      .intro__rail { left: var(--gutter); top: 66px; bottom: auto; }
-      .intro__bar ~ .intro__rail { top: 66px; }
-      .rail { grid-template-columns: 1fr; margin: 0 0 6px; }
+      /* Bajo el reloj 24/7 (76 px de alto desde 18 px): la etapa visible es un botón y no debe quedar tapada */
+      .intro__rail { left: var(--gutter); top: 104px; bottom: auto; }
+      .intro__bar ~ .intro__rail { top: 104px; }
+      .rail { grid-template-columns: 1fr; margin: 0; }
       .rail li { display: none; font-size: 13px; }
       .intro__rail[data-stage="0"] li[data-k="0"], .intro__rail[data-stage="1"] li[data-k="1"], .intro__rail[data-stage="2"] li[data-k="2"] { display: flex; }
       .rail__note { display: none; }
@@ -1660,11 +1672,14 @@
         </div>
         <div class="intro__rail" id="intro-step">
           <ol class="rail">
-            <li data-k="0"><b>01</b>Cada área trabaja por su lado</li>
-            <li data-k="1"><b>02</b>Conectando cada área</li>
-            <li data-k="2"><b>03</b>Una sola torre de control</li>
+            <li data-k="0"><button type="button" data-seek="0"><b>01</b>Cada área trabaja por su lado</button></li>
+            <li data-k="1"><button type="button" data-seek="1"><b>02</b>Conectando cada área</button></li>
+            <li data-k="2"><button type="button" data-seek="2"><b>03</b>Una sola torre de control</button></li>
           </ol>
-          <div class="rail__bar"><i id="rail-fill"></i></div>
+          <div class="rail__ctl">
+            <div class="rail__track" id="rail-track" role="slider" tabindex="0" aria-label="Avance de la conexión de áreas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="rail__bar"><i id="rail-fill"></i></div></div>
+            <button type="button" class="rail__play" id="rail-play" data-state="play" aria-label="Pausar el avance"><svg viewBox="0 0 10 10" aria-hidden="true"><path class="rail__pause" d="M2 1.5h2v7H2zM6 1.5h2v7H6z"/><path class="rail__go" d="M2.5 1.2 9 5l-6.5 3.8z"/></svg></button>
+          </div>
           <p class="rail__note">Datos de ejemplo<span class="rail__drag"> · Arrastre para girar el mapa</span></p>
         </div>
       </div>
