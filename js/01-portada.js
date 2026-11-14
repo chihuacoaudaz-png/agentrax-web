@@ -998,15 +998,77 @@
       }
       let groundFn = hTajo;
 
-      // Terreno: una malla fina en la zona de la mina y otra amplia alrededor que se pierde en el fondo,
-      // así al girar nunca se ve un borde
-      function* terrain(fn, w, d, cz, low, seg, fade) {
-        const g = new T.PlaneGeometry(w, d, Math.round(w * seg), Math.round(d * seg));
-        yield;
-        g.rotateX(-Math.PI / 2);
-        g.translate(0, 0, cz);
-        const p = g.attributes.position;
-        for (let i = 0; i < p.count; i++) { p.setY(i, fn(p.getX(i), p.getZ(i))); if (i % 16384 === 16383) yield; }
+      // Terreno: malla cercana con detalle completo en la mina y menor hacia los bordes, más un anillo lejano liviano
+      function* terrain(fn, w, d, cz, low, seg, fade, core) {
+        const pos = [], idx = [];
+        if (fade[0] > 0) {
+          const half = cz < 0, r0 = fade[0] - 0.5, r1 = fade[3] + 2;
+          const nT = half ? 160 : 240, nR = half ? 55 : 40;
+          const th0 = half ? Math.PI : 0, th1 = Math.PI * 2, cols = half ? nT + 1 : nT;
+          let v = 0;
+          for (let j = 0; j <= nR; j++) {
+            const r = r0 + (r1 - r0) * Math.pow(j / nR, 1.35);
+            for (let i = 0; i < cols; i++) {
+              const th = th0 + (th1 - th0) * i / nT;
+              const x = Math.cos(th) * r, z = half && (i === 0 || i === nT) ? 0 : Math.sin(th) * r;
+              pos.push(x, fn(x, z), z);
+              if ((v++ & 4095) === 4095) yield;
+            }
+          }
+          for (let j = 0; j < nR; j++) {
+            for (let i = 0; i < nT; i++) {
+              const i1 = half ? i + 1 : (i + 1) % nT;
+              const a = j * cols + i, b = j * cols + i1, c = (j + 1) * cols + i, d0 = (j + 1) * cols + i1;
+              idx.push(a, b, c, b, d0, c);
+            }
+          }
+        } else {
+          const rMax = fade[3] + 2, r2 = rMax * rMax;
+          const xMin = Math.max(-w / 2, -rMax), xMax = Math.min(w / 2, rMax);
+          const zMin = Math.max(cz - d / 2, -rMax), zMax = Math.min(cz + d / 2, rMax);
+          const [fx0, fx1, fz0, fz1] = core || [xMin, xMax, zMin, zMax];
+          const grow = (start, end, dir) => {
+            const pts = [];
+            let p = start, s = 1;
+            while (dir > 0 ? p < end - 1e-6 : p > end + 1e-6) {
+              s = Math.min(4, s * 1.12);
+              p += dir * s;
+              if (dir > 0 ? p >= end - s * 0.35 : p <= end + s * 0.35) p = end;
+              pts.push(p);
+            }
+            return pts;
+          };
+          const axis = (a, b, f0, f1) => {
+            const out = grow(f0, a, -1).reverse();
+            for (let v = f0; v <= f1 + 1e-6; v++) out.push(v);
+            return out.concat(grow(f1, b, 1));
+          };
+          const xs = axis(xMin, xMax, Math.max(xMin, fx0), Math.min(xMax, fx1));
+          const zs = axis(zMin, zMax, Math.max(zMin, fz0), Math.min(zMax, fz1));
+          yield;
+          const nx = xs.length, nz = zs.length, map = new Int32Array(nx * nz).fill(-1);
+          const vert = (i, j) => {
+            const k = j * nx + i;
+            if (map[k] >= 0) return map[k];
+            const x = xs[i], z = zs[j], id = pos.length / 3;
+            map[k] = id;
+            pos.push(x, fn(x, z), z);
+            return id;
+          };
+          for (let j = 0; j < nz - 1; j++) {
+            const z0 = zs[j], z1 = zs[j + 1], qz = Math.max(z0, Math.min(0, z1));
+            for (let i = 0; i < nx - 1; i++) {
+              const x0 = xs[i], x1 = xs[i + 1], qx = Math.max(x0, Math.min(0, x1));
+              if (qx * qx + qz * qz > r2) continue;
+              const a = vert(i, j), b = vert(i + 1, j), c = vert(i, j + 1), d0 = vert(i + 1, j + 1);
+              idx.push(a, c, b, b, c, d0);
+            }
+            if ((j & 15) === 15) yield;
+          }
+        }
+        const g = new T.BufferGeometry();
+        g.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
+        g.setIndex(idx);
         const mat = new T.ShaderMaterial({
           vertexShader: terrainVS, fragmentShader: terrainFS, transparent: true, side: T.DoubleSide,
           extensions: { derivatives: true },
@@ -1456,7 +1518,7 @@
 
       function* buildTajo() {
         groundFn = hTajo;
-        world.add(yield* terrain(hTajo, 380, 380, 0, BENCHES * BENCH_H, 1, [-1, 0, 172, 172.01]));
+        world.add(yield* terrain(hTajo, 380, 380, 0, BENCHES * BENCH_H, 1, [-1, 0, 172, 172.01], [-142, 34, -72, 60]));
         yield;
         world.add(yield* terrain(hTajo, 1100, 1100, 0, BENCHES * BENCH_H, 0.32, [171.99, 172, 420, 540]));
         const pitPoint = (a, rr) => {
@@ -1713,7 +1775,7 @@
 
       function* buildSub() {
         groundFn = hSub;
-        world.add(yield* terrain(hSub, 380, 190, -95, 40, 1, [-1, 0, 172, 172.01]));
+        world.add(yield* terrain(hSub, 380, 190, -95, 40, 1, [-1, 0, 172, 172.01], [-106, 96, -98, 0]));
         yield;
         world.add(yield* terrain(hSub, 1100, 550, -275, 40, 0.32, [171.99, 172, 420, 540]));
         const smooth = (a, b, v) => { const t = Math.min(1, Math.max(0, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
