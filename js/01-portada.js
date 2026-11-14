@@ -3308,7 +3308,7 @@
     S3 = create3D(() => { forceFrame = true; }, (h, day, sky, top) => {
       // El degradado del cielo solo se reescribe si cambió: cada escritura repinta todo el fondo de la portada
       const skyBg = `linear-gradient(to bottom, #${top.getHexString()} 0%, #${sky.getHexString()} 42%, #020812 100%)`;
-      if (skyBg !== lastSky) intro.style.background = lastSky = skyBg;
+      if (skyBg !== lastSky) intro.style.backgroundImage = lastSky = skyBg;
       clockHand.setAttribute("transform", `rotate(${(h / 24) * 360} 32 32)`);
       const minute = Math.floor(h * 60);
       if (minute === lastMinute) return;

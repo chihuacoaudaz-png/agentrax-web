@@ -139,6 +139,10 @@
 
     /* ---------- Apertura: del campo y la oficina a la torre ---------- */
     .intro { position: relative; background: var(--navy); color: var(--on-navy); }
+    /* El cielo (degradado que pinta 01-portada.js) conserva la escala de la portada alta de antes (2,6 / 2,3 pantallas): se ve igual al abrir */
+    .intro { background-repeat: no-repeat; background-size: 100% 260%; }
+    @media (max-width: 900px) { .intro { background-size: 100% 230%; } }
+    @media (prefers-reduced-motion: reduce) and (min-width: 901px) { .intro { background-size: auto; } }
     .intro__stage { position: relative; height: calc(100vh - 60px); height: calc(100svh - 60px); min-height: 560px; overflow: hidden; }
     .intro canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
     .intro__bar { position: absolute; z-index: 5; top: 18px; left: var(--gutter); right: var(--gutter); display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
