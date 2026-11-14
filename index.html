@@ -138,8 +138,8 @@
 
 
     /* ---------- Apertura: del campo y la oficina a la torre ---------- */
-    .intro { position: relative; height: 260vh; background: var(--navy); color: var(--on-navy); }
-    .intro__stage { position: sticky; top: 60px; height: calc(100vh - 60px); height: calc(100svh - 60px); min-height: 560px; overflow: hidden; }
+    .intro { position: relative; background: var(--navy); color: var(--on-navy); }
+    .intro__stage { position: relative; height: calc(100vh - 60px); height: calc(100svh - 60px); min-height: 560px; overflow: hidden; }
     .intro canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
     .intro__bar { position: absolute; z-index: 5; top: 18px; left: var(--gutter); right: var(--gutter); display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
     .intro__step { margin: 0; display: flex; gap: 10px; align-items: center; font-family: var(--f-data); font-size: 13px; color: var(--on-navy-2); }
@@ -240,12 +240,9 @@
     .intro[data-lit="true"] .hub__label small { color: var(--cyan); }
 
     @media (prefers-reduced-motion: reduce) {
-      .intro { height: auto; }
-      .intro__stage { position: relative; top: 0; }
       .intro__hint { display: none; }
     }
     @media (max-width: 900px) {
-      .intro { height: 230vh; }
       .intro__rail { left: var(--gutter); top: 66px; bottom: auto; }
       .intro__bar ~ .intro__rail { top: 66px; }
       .rail { grid-template-columns: 1fr; margin: 0 0 6px; }

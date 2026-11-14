@@ -817,8 +817,8 @@
 
     new IntersectionObserver(es => { introVisible = es[0].isIntersecting; }).observe(intro);
     document.getElementById('intro-go').addEventListener('click', () => {
-      const end = intro.offsetTop + intro.offsetHeight - window.innerHeight;
-      window.scrollTo({ top: end, behavior: reduceMotion ? 'auto' : 'smooth' });
+      // La portada mide una pantalla: el botón lleva a la sección siguiente
+      intro.nextElementSibling.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
     });
     let introRz;
     window.addEventListener('resize', () => { clearTimeout(introRz); introRz = setTimeout(introLayout, 120); });
