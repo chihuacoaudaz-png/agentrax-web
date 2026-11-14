@@ -19,6 +19,7 @@
     const labels = IND.map((d, i) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'indc__lbl' + (d.main ? ' is-main' : '');
       b.innerHTML = (d.main ? '<small>Nuestra especialidad</small>' : '') + d.name;
+      b.style.visibility = 'hidden';
       b.addEventListener('click', () => { stop(); show(i); });
       labelsEl.appendChild(b); return b;
     });
@@ -63,7 +64,13 @@
     // La escena (y su contexto WebGL) se crea solo cuando la sección está a una pantalla o menos
     function init() {
       // Escena
-      const renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      let renderer;
+      try {
+        renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      } catch (e) {
+        labels.forEach(b => { b.style.visibility = ''; });
+        return;
+      }
       renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
       const scene = new T.Scene();
       const camera = new T.PerspectiveCamera(32, 16 / 9, 0.1, 200);
@@ -452,6 +459,7 @@
           v.set(0, 0, 0); t.g.localToWorld(v); const behind = v.z < -R * 0.75; v.y = -0.4; v.x *= 1.16; v.z *= 1.16; v.project(camera);
           const lb = labels[k]; lb.style.left = `${(v.x + 1) / 2 * W}px`; lb.style.top = `${(1 - v.y) / 2 * H}px`;
           lb.style.opacity = behind || v.z >= 1 ? 0 : '';
+          if (lb.style.visibility) lb.style.visibility = '';
         });
         pulsePos.needsUpdate = true; pulseCol.needsUpdate = true;
         v.set(0, orb.position.y + 2.5, 0); v.project(camera); coreLbl.style.left = `${(v.x + 1) / 2 * W}px`; coreLbl.style.top = `${(1 - v.y) / 2 * H}px`;
