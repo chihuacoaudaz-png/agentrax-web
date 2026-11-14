@@ -24,12 +24,22 @@ TIEMPO_FIJO = """(() => { const o = window.requestAnimationFrame.bind(window); w
 OCULTAR = '#ait-orb { visibility: hidden !important; }'
 CONGELAR = "document.getAnimations().forEach(a => { try { a.pause(); a.currentTime = 0; } catch (e) {} })"
 PAGINAS = ['index.html', 'privacy.html', 'terms.html', '404.html']
+# La portada esta lista cuando la escena 3D termino de construirse (sin .is-swapping) y el avance
+# automatico quedo en su punto final (#rail-play en "end"; con "reducir movimiento" arranca ahi).
+# Sin esta espera, un equipo cargado capturaba la portada a medio armar (escena en blanco, 0 areas).
+LISTO = """() => { const i = document.getElementById('intro'), b = document.getElementById('rail-play');
+  return !i || (!i.classList.contains('is-swapping') && b && b.dataset.state === 'end'); }"""
+
+
+def esperar_portada(pg):
+    pg.wait_for_function(LISTO, timeout=60000)
 
 
 def capturar(pg, destino, pref, alto, quieto=True):
     """Recorre la pagina de pantalla en pantalla. Devuelve la lista de archivos."""
     if quieto:
         pg.add_style_tag(content=OCULTAR)
+        esperar_portada(pg)
     pg.wait_for_timeout(3000)
     archivos, y, i = [], 0, 0
     total = pg.evaluate('document.documentElement.scrollHeight')
@@ -68,7 +78,10 @@ def tomar(url, destino, quieto=True):
             pg.goto(f'{url}/index.html', wait_until='load')
             pg.wait_for_timeout(2500)
             pg.click('[data-mine="sub"]')
-            pg.wait_for_timeout(2500)
+            pg.wait_for_timeout(500)
+            if quieto:
+                esperar_portada(pg)
+            pg.wait_for_timeout(2000)
             pg.screenshot(path=os.path.join(destino, f'{modo}_sub_00.png'))
             ctx.close()
         b.close()
